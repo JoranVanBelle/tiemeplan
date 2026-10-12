@@ -1,0 +1,64 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.joranvanbelle.tiemeplan</groupId>
+  <artifactId>tiemeplan</artifactId>
+  <version>0.0.1</version>
+  <packaging>jar</packaging>
+
+  <name>tiemeplan</name>
+  <url>https://github.com/JoranVanBelle/tiemeplan</url>
+
+  <description>Create time plans for schools using constraints</description>
+
+  <developers>
+    <developer>
+      <name>Joran Van Belle</name>
+      <email>joran.vanbelle@live.be</email>
+      <roles>
+        <role>author</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <properties>
+    <java.version>26</java.version>
+    <junit-jupiter.version>6.1.3</junit-jupiter.version>
+    <assertj.version>3.27.7</assertj.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
