@@ -1,7 +1,7 @@
 package io.joranvanbelle.tiemeplan;
 
 import io.joranvanbelle.tiemeplan.backtrack.ClassSchedule;
-import io.joranvanbelle.tiemeplan.variables.Classroom;
+import io.joranvanbelle.tiemeplan.backtrack.ScheduledCourse;
 import org.assertj.core.api.AbstractAssert;
 
 import java.util.Arrays;
@@ -48,17 +48,17 @@ public class ClassScheduleAssert extends AbstractAssert<ClassScheduleAssert, Cla
         return this;
     }
 
-    public ClassScheduleAssert containsOnlyScheduledCoursed(ClassSchedule.ScheduledCourse... expectedCourses) {
+    public ClassScheduleAssert containsOnlyScheduledCoursed(ScheduledCourse... expectedCourses) {
         isNotNull();
 
         var expectedCoursesList = Arrays.stream(expectedCourses)
-                .sorted(Comparator.comparing((ClassSchedule.ScheduledCourse c) -> c.timeslot().value())
-                        .thenComparing(c -> c.classroom().value()))
+                .sorted(Comparator.comparing((ScheduledCourse c) -> c.timeslot().value())
+                        .thenComparing(c -> c.classroom().name()))
                 .toList();
 
-        List<ClassSchedule.ScheduledCourse> actualCourses = actual.assignedCourses();
-        actualCourses.sort(Comparator.comparing((ClassSchedule.ScheduledCourse c) -> c.timeslot().value())
-                .thenComparing(c -> c.classroom().value()));
+        List<ScheduledCourse> actualCourses = actual.assignedCourses();
+        actualCourses.sort(Comparator.comparing((ScheduledCourse c) -> c.timeslot().value())
+                .thenComparing(c -> c.classroom().name()));
 
         if (!actualCourses.equals(expectedCoursesList)) {
                 failWithMessage(
@@ -78,7 +78,7 @@ public class ClassScheduleAssert extends AbstractAssert<ClassScheduleAssert, Cla
     }
 
     private String formatCourses(
-            List<ClassSchedule.ScheduledCourse> courses
+            List<ScheduledCourse> courses
     ) {
         if (courses.isEmpty()) {
             return "  (none)";

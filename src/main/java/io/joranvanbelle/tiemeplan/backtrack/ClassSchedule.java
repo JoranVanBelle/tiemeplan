@@ -35,7 +35,7 @@ public class ClassSchedule {
     }
 
     public boolean isValid(Classroom classroom, Timeslot timeslot, Course course) {
-        if (isRoomOccupied(classroom, timeslot)) {
+        if (isRoomOccupied(classroom, timeslot) || !classroom.canHoldStudentGroup(course.studentGroup().size())) {
             return false;
         }
         if (isTeacherOccupied(timeslot, course)) {
@@ -93,18 +93,6 @@ public class ClassSchedule {
 
     public Map<StudentGroup, List<Timeslot>> assignedStudentGroups() {
         return assignedStudentGroups;
-    }
-
-    public record ScheduledCourse(Classroom classroom, Timeslot timeslot, Course course) {
-
-        public ScheduledCourse(String classroom, LocalTime timeslot, String teacher, String subject, String studentGroup) {
-            this(
-              new Classroom(classroom),
-              new Timeslot(timeslot),
-              new Course(new Teacher(teacher), new Subject(subject), new StudentGroup(studentGroup))
-            );
-        }
-
     }
 
 }

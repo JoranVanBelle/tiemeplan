@@ -2,7 +2,7 @@ package io.joranvanbelle.tiemeplan.backtrack;
 
 import io.joranvanbelle.tiemeplan.CourseMother;
 import io.joranvanbelle.tiemeplan.ClassScheduleAssert;
-import io.joranvanbelle.tiemeplan.backtrack.ClassSchedule.ScheduledCourse;
+import io.joranvanbelle.tiemeplan.backtrack.ScheduledCourse;
 import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
@@ -23,15 +23,30 @@ public class SolverTest {
     @Test
     void findFirstResult_oneClassRoom() {
         // given
-        var availableClassRooms = List.of(new Classroom("room1"));
-        var availableTimeslots = List.of(new Timeslot(LocalTime.of(10, 0)), new Timeslot(LocalTime.of(11, 0)), new Timeslot(LocalTime.of(12, 0)));
+        var availableClassRooms = List.of(new Classroom("room1", 100));
+        var availableTimeslots = List.of(
+                new Timeslot(LocalTime.of(10, 0)),
+                new Timeslot(LocalTime.of(11, 0)),
+                new Timeslot(LocalTime.of(12, 0)));
         var solver = new Solver(availableClassRooms, availableTimeslots);
 
         // when
         var courses = List.of(
-                CourseMother.newCourse().teacher("Mr. Johnson").subject("English").studentGroup("1A").build(),
-                CourseMother.newCourse().teacher("Ms. Johansen").subject("Math").studentGroup("2A").build(),
-                CourseMother.newCourse().teacher("Mr. Smith").subject("PE").studentGroup("3A").build()
+                CourseMother.newCourse()
+                        .teacher("Mr. Johnson")
+                        .subject("English")
+                        .studentGroup("1A", 10)
+                        .build(),
+                CourseMother.newCourse()
+                        .teacher("Ms. Johansen")
+                        .subject("Math")
+                        .studentGroup("2A", 10)
+                        .build(),
+                CourseMother.newCourse()
+                        .teacher("Mr. Smith")
+                        .subject("PE")
+                        .studentGroup("3A", 10)
+                        .build()
         );
         var result = solver.solve(courses);
 
@@ -40,9 +55,33 @@ public class SolverTest {
                 res -> ClassScheduleAssert.assertThat(res.solution())
                         .hasNumberOfCourses(3)
                         .containsOnlyScheduledCoursed(
-                                new ScheduledCourse("room1", LocalTime.of(10, 0), "Mr. Johnson", "English", "1A"),
-                                new ScheduledCourse("room1", LocalTime.of(11, 0), "Ms. Johansen", "Math", "2A"),
-                                new ScheduledCourse("room1", LocalTime.of(12, 0), "Mr. Smith", "PE", "3A")
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room1", 100)
+                                        .timeslot(LocalTime.of(10, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Mr. Johnson")
+                                                .subject("English")
+                                                .studentGroup("1A", 10)
+                                                .build())
+                                        .build(),
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room1", 100)
+                                        .timeslot(LocalTime.of(11, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Ms. Johansen")
+                                                .subject("Math")
+                                                .studentGroup("2A", 10)
+                                                .build())
+                                        .build(),
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room1", 100)
+                                        .timeslot(LocalTime.of(12, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Mr. Smith")
+                                                .subject("PE")
+                                                .studentGroup("3A", 10)
+                                                .build())
+                                        .build()
                         )
         );
     }
@@ -50,15 +89,32 @@ public class SolverTest {
     @Test
     void findResult_fillUpClassRoomsFirst() {
         // given
-        var availableClassRooms = List.of(new Classroom("room1"), new Classroom("room2"));
-        var availableTimeslots = List.of(new Timeslot(LocalTime.of(10, 0)), new Timeslot(LocalTime.of(11, 0)), new Timeslot(LocalTime.of(12, 0)));
+        var availableClassRooms = List.of(
+                new Classroom("room1", 100),
+                new Classroom("room2", 100));
+        var availableTimeslots = List.of(
+                new Timeslot(LocalTime.of(10, 0)),
+                new Timeslot(LocalTime.of(11, 0)),
+                new Timeslot(LocalTime.of(12, 0)));
         var solver = new Solver(availableClassRooms, availableTimeslots);
 
         // when
         var courses = List.of(
-                CourseMother.newCourse().teacher("Mr. Johnson").subject("English").studentGroup("1A").build(),
-                CourseMother.newCourse().teacher("Ms. Johansen").subject("Math").studentGroup("2A").build(),
-                CourseMother.newCourse().teacher("Mr. Smith").subject("PE").studentGroup("3A").build()
+                CourseMother.newCourse()
+                        .teacher("Mr. Johnson")
+                        .subject("English")
+                        .studentGroup("1A", 10)
+                .build(),
+                CourseMother.newCourse()
+                        .teacher("Ms. Johansen")
+                        .subject("Math")
+                        .studentGroup("2A", 10)
+                .build(),
+                CourseMother.newCourse()
+                        .teacher("Mr. Smith")
+                        .subject("PE")
+                        .studentGroup("3A", 10)
+                .build()
         );
         var result = solver.solve(courses);
 
@@ -67,9 +123,72 @@ public class SolverTest {
                 res -> ClassScheduleAssert.assertThat(res.solution())
                         .hasNumberOfCourses(3)
                         .containsOnlyScheduledCoursed(
-                                new ScheduledCourse("room1", LocalTime.of(10, 0), "Mr. Johnson", "English", "1A"),
-                                new ScheduledCourse("room2", LocalTime.of(10, 0), "Ms. Johansen", "Math", "2A"),
-                                new ScheduledCourse("room1", LocalTime.of(11, 0), "Mr. Smith", "PE", "3A")
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room1", 100)
+                                        .timeslot(LocalTime.of(10, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Mr. Johnson")
+                                                .subject("English")
+                                                .studentGroup("1A", 10)
+                                                .build())
+                                        .build(),
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room2", 100)
+                                        .timeslot(LocalTime.of(10, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Ms. Johansen")
+                                                .subject("Math")
+                                                .studentGroup("2A", 10)
+                                                .build())
+                                        .build(),
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room1", 100)
+                                        .timeslot(LocalTime.of(11, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Mr. Smith")
+                                                .subject("PE")
+                                                .studentGroup("3A", 10)
+                                                .build())
+                                        .build()
+                        )
+        );
+    }
+
+    @Test
+    void assignStudentGroupToCorrectClassroom() {
+        // given
+        var availableClassRooms = List.of(
+                new Classroom("room1", 10),
+                new Classroom("room2", 20),
+                new Classroom("room3", 10));
+        var availableTimeslots = List.of(
+                new Timeslot(LocalTime.of(10, 0)));
+        var solver = new Solver(availableClassRooms, availableTimeslots);
+
+        // when
+        var courses = List.of(
+                CourseMother.newCourse()
+                        .teacher("Mr. Johnson")
+                        .subject("English")
+                        .studentGroup("1A", 15)
+                        .build()
+        );
+        var result = solver.solve(courses);
+
+        // then
+        assertThat(result).isInstanceOfSatisfying(BacktrackResult.Success.class,
+                res -> ClassScheduleAssert.assertThat(res.solution())
+                        .hasNumberOfCourses(1)
+                        .containsOnlyScheduledCoursed(
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room2", 20)
+                                        .timeslot(LocalTime.of(10, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Mr. Johnson")
+                                                .subject("English")
+                                                .studentGroup("1A", 1)
+                                                .build())
+                                        .build()
                         )
         );
     }
@@ -97,19 +216,71 @@ public class SolverTest {
 
     private static Stream<Arguments> invalidCombinations() {
         return Stream.of(
-          Arguments.of("not enough rooms",  List.of(new Classroom("room1")), List.of(new Timeslot(LocalTime.of(10, 0)), new Timeslot(LocalTime.of(11, 0))), List.of(
-                  CourseMother.newCourse().teacher("Mr. Johnson").subject("English").studentGroup("1A").build(),
-                  CourseMother.newCourse().teacher("Ms. Johansen").subject("Math").studentGroup("2A").build(),
-                  CourseMother.newCourse().teacher("Mr. Smith").subject("PE").studentGroup("3A").build()
-          )),
-                Arguments.of("not enough timeslots",  List.of(new Classroom("room1"), new Classroom("room2")), List.of(new Timeslot(LocalTime.of(10, 0))), List.of(
-                        CourseMother.newCourse().teacher("Mr. Johnson").subject("English").studentGroup("1A").build(),
-                        CourseMother.newCourse().teacher("Ms. Johansen").subject("Math").studentGroup("2A").build(),
-                        CourseMother.newCourse().teacher("Mr. Smith").subject("PE").studentGroup("3A").build()
+                Arguments.of("not enough rooms", List.of(new Classroom("room1", 100)),
+                        List.of(
+                                new Timeslot(LocalTime.of(10, 0)),
+                                new Timeslot(LocalTime.of(11, 0))),
+                        List.of(
+                        CourseMother.newCourse()
+                                .teacher("Mr. Johnson")
+                                .subject("English")
+                                .studentGroup("1A", 10)
+                                .build(),
+                        CourseMother.newCourse()
+                                .teacher("Ms. Johansen")
+                                .subject("Math")
+                                .studentGroup("2A", 10)
+                                .build(),
+                        CourseMother.newCourse()
+                                .teacher("Mr. Smith")
+                                .subject("PE")
+                                .studentGroup("3A", 10)
+                                .build()
                 )),
-                Arguments.of("not enough teachers",  List.of(new Classroom("room1")), List.of(new Timeslot(LocalTime.of(10, 0))), List.of(
-                        CourseMother.newCourse().teacher("Mr. Johnson").subject("English").studentGroup("1A").build(),
-                        CourseMother.newCourse().teacher("Ms. Johnson").subject("Math").studentGroup("2A").build()
+                Arguments.of("not enough timeslots", List.of(
+                        new Classroom("room1", 100),
+                        new Classroom("room2", 100)),
+                        List.of(new Timeslot(LocalTime.of(10, 0))),
+                        List.of(
+                        CourseMother.newCourse()
+                                .teacher("Mr. Johnson")
+                                .subject("English")
+                                .studentGroup("1A", 10)
+                                .build(),
+                        CourseMother.newCourse()
+                                .teacher("Ms. Johansen")
+                                .subject("Math")
+                                .studentGroup("2A", 10)
+                                .build(),
+                        CourseMother.newCourse()
+                                .teacher("Mr. Smith")
+                                .subject("PE")
+                                .studentGroup("3A", 10)
+                                .build()
+                )),
+                Arguments.of("not enough teachers", List.of(new Classroom("room1", 100)),
+                        List.of(new Timeslot(LocalTime.of(10, 0))),
+                        List.of(
+                        CourseMother.newCourse()
+                                .teacher("Mr. Johnson")
+                                .subject("English")
+                                .studentGroup("1A", 10)
+                                .build(),
+                        CourseMother.newCourse()
+                                .teacher("Ms. Johnson")
+                                .subject("Math")
+                                .studentGroup("2A", 10)
+                                .build()
+                )),
+                Arguments.of("classroom cannot hold students",
+                        List.of(new Classroom("room1", 10)),
+                        List.of(new Timeslot(LocalTime.of(10, 0))),
+                        List.of(
+                                CourseMother.newCourse()
+                                        .teacher("Mr. Johnson")
+                                        .subject("English")
+                                        .studentGroup("1A", 15)
+                                        .build()
                 ))
         );
     }

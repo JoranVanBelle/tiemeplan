@@ -15,7 +15,7 @@ public class CourseMother {
 
         private Teacher teacher = new Teacher("Ms. Smith");
         private Subject subject = new Subject("Math");
-        private StudentGroup studentGroup = new StudentGroup("6A");
+        private StudentGroup studentGroup = new StudentGroup("6A", 10);
 
         public Builder teacher(String teacher) {
             this.teacher = new Teacher(teacher);
@@ -27,8 +27,8 @@ public class CourseMother {
             return this;
         }
 
-        public Builder studentGroup(String studentGroup) {
-            this.studentGroup = new StudentGroup(studentGroup);
+        public Builder studentGroup(String studentGroup, int size) {
+            this.studentGroup = new StudentGroup(studentGroup, size);
             return this;
         }
 
