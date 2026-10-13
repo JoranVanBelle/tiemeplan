@@ -8,13 +8,14 @@ import java.util.List;
 
 /**
  * take in all the variables:
- *             - Classroom
- *             - StudentGroup
- *             - Subject
- *             - Teacher
- *             - Timeslot
- *        run through all possible combinations until each group is able to take their course
- *        Each subject should be given X amount of times
+ * - Classroom
+ * - StudentGroup
+ * - Subject
+ * - Teacher
+ * - Timeslot
+ * run through all possible combinations until each group is able to take their
+ * course
+ * Each subject should be given X amount of times
  */
 public class Solver {
 

@@ -3,8 +3,7 @@ package io.joranvanbelle.tiemeplan.variables;
 public record Course(
         Teacher teacher,
         Subject subject,
-        StudentGroup studentGroup
-) {
+        StudentGroup studentGroup) {
 
     public static Builder newBuilder() {
         return new Builder();

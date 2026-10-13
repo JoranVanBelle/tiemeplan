@@ -64,9 +64,7 @@ public class ScheduledCourseMother {
                     new Course(
                             new Teacher(teacher),
                             new Subject(subject),
-                            new StudentGroup(studentGroup, studentGroupSize)
-                    )
-            );
+                            new StudentGroup(studentGroup, studentGroupSize)));
         }
     }
 

@@ -1,19 +1,16 @@
 package io.joranvanbelle.tiemeplan.backtrack;
 
-
 import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.StudentGroup;
-import io.joranvanbelle.tiemeplan.variables.Subject;
 import io.joranvanbelle.tiemeplan.variables.Teacher;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
-import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public class ClassSchedule {
 
@@ -56,20 +53,21 @@ public class ClassSchedule {
     }
 
     private boolean isStudentGroupOccupied(Timeslot timeslot, Course course) {
-        return this.assignedStudentGroups.getOrDefault(course.studentGroup(), Collections.emptyList()).contains(timeslot);
+        return this.assignedStudentGroups.getOrDefault(course.studentGroup(), Collections.emptyList())
+                .contains(timeslot);
     }
 
     public ClassSchedule assign(Classroom classroom, Timeslot timeslot, Course course) {
         var scheduledCourse = new ScheduledCourse(classroom, timeslot, course);
-        
+
         this.assignedCourses.add(scheduledCourse);
         this.assignedClassRooms.computeIfAbsent(classroom, k -> new ArrayList<>()).add(timeslot);
         this.assignedTeachers.computeIfAbsent(course.teacher(), k -> new ArrayList<>()).add(timeslot);
         this.assignedStudentGroups.computeIfAbsent(course.studentGroup(), k -> new ArrayList<>()).add(timeslot);
-        
+
         return this;
     }
-    
+
     public ClassSchedule unassign(Classroom classroom, Timeslot timeslot, Course course) {
         assignedCourses.removeLast();
         this.assignedClassRooms.get(classroom).remove(timeslot);

@@ -1,20 +1,19 @@
 package io.joranvanbelle.tiemeplan.backtrack;
 
-import io.joranvanbelle.tiemeplan.CourseMother;
 import io.joranvanbelle.tiemeplan.ClassScheduleAssert;
-import io.joranvanbelle.tiemeplan.backtrack.ScheduledCourse;
+import io.joranvanbelle.tiemeplan.CourseMother;
 import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
-import net.bytebuddy.asm.MemberSubstitution;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,8 +45,7 @@ public class SolverTest {
                         .teacher("Mr. Smith")
                         .subject("PE")
                         .studentGroup("3A", 10)
-                        .build()
-        );
+                        .build());
         var result = solver.solve(courses);
 
         // then
@@ -81,9 +79,7 @@ public class SolverTest {
                                                 .subject("PE")
                                                 .studentGroup("3A", 10)
                                                 .build())
-                                        .build()
-                        )
-        );
+                                        .build()));
     }
 
     @Test
@@ -104,18 +100,17 @@ public class SolverTest {
                         .teacher("Mr. Johnson")
                         .subject("English")
                         .studentGroup("1A", 10)
-                .build(),
+                        .build(),
                 CourseMother.newCourse()
                         .teacher("Ms. Johansen")
                         .subject("Math")
                         .studentGroup("2A", 10)
-                .build(),
+                        .build(),
                 CourseMother.newCourse()
                         .teacher("Mr. Smith")
                         .subject("PE")
                         .studentGroup("3A", 10)
-                .build()
-        );
+                        .build());
         var result = solver.solve(courses);
 
         // then
@@ -149,9 +144,7 @@ public class SolverTest {
                                                 .subject("PE")
                                                 .studentGroup("3A", 10)
                                                 .build())
-                                        .build()
-                        )
-        );
+                                        .build()));
     }
 
     @Test
@@ -171,8 +164,7 @@ public class SolverTest {
                         .teacher("Mr. Johnson")
                         .subject("English")
                         .studentGroup("1A", 15)
-                        .build()
-        );
+                        .build());
         var result = solver.solve(courses);
 
         // then
@@ -188,9 +180,7 @@ public class SolverTest {
                                                 .subject("English")
                                                 .studentGroup("1A", 1)
                                                 .build())
-                                        .build()
-                        )
-        );
+                                        .build()));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -199,8 +189,7 @@ public class SolverTest {
             String name,
             List<Classroom> availableClassRooms,
             List<Timeslot> availableTimeslots,
-            List<Course> courses
-    ) {
+            List<Course> courses) {
         // given
         var solver = new Solver(availableClassRooms, availableTimeslots);
 
@@ -210,8 +199,7 @@ public class SolverTest {
         // then
         assertThat(result).isInstanceOfSatisfying(BacktrackResult.NoSolutionFound.class,
                 res -> ClassScheduleAssert.assertThat(res.previousState())
-                        .hasNoCourses()
-        );
+                        .hasNoCourses());
     }
 
     private static Stream<Arguments> invalidCombinations() {
@@ -221,57 +209,54 @@ public class SolverTest {
                                 new Timeslot(LocalTime.of(10, 0)),
                                 new Timeslot(LocalTime.of(11, 0))),
                         List.of(
-                        CourseMother.newCourse()
-                                .teacher("Mr. Johnson")
-                                .subject("English")
-                                .studentGroup("1A", 10)
-                                .build(),
-                        CourseMother.newCourse()
-                                .teacher("Ms. Johansen")
-                                .subject("Math")
-                                .studentGroup("2A", 10)
-                                .build(),
-                        CourseMother.newCourse()
-                                .teacher("Mr. Smith")
-                                .subject("PE")
-                                .studentGroup("3A", 10)
-                                .build()
-                )),
+                                CourseMother.newCourse()
+                                        .teacher("Mr. Johnson")
+                                        .subject("English")
+                                        .studentGroup("1A", 10)
+                                        .build(),
+                                CourseMother.newCourse()
+                                        .teacher("Ms. Johansen")
+                                        .subject("Math")
+                                        .studentGroup("2A", 10)
+                                        .build(),
+                                CourseMother.newCourse()
+                                        .teacher("Mr. Smith")
+                                        .subject("PE")
+                                        .studentGroup("3A", 10)
+                                        .build())),
                 Arguments.of("not enough timeslots", List.of(
                         new Classroom("room1", 100),
                         new Classroom("room2", 100)),
                         List.of(new Timeslot(LocalTime.of(10, 0))),
                         List.of(
-                        CourseMother.newCourse()
-                                .teacher("Mr. Johnson")
-                                .subject("English")
-                                .studentGroup("1A", 10)
-                                .build(),
-                        CourseMother.newCourse()
-                                .teacher("Ms. Johansen")
-                                .subject("Math")
-                                .studentGroup("2A", 10)
-                                .build(),
-                        CourseMother.newCourse()
-                                .teacher("Mr. Smith")
-                                .subject("PE")
-                                .studentGroup("3A", 10)
-                                .build()
-                )),
+                                CourseMother.newCourse()
+                                        .teacher("Mr. Johnson")
+                                        .subject("English")
+                                        .studentGroup("1A", 10)
+                                        .build(),
+                                CourseMother.newCourse()
+                                        .teacher("Ms. Johansen")
+                                        .subject("Math")
+                                        .studentGroup("2A", 10)
+                                        .build(),
+                                CourseMother.newCourse()
+                                        .teacher("Mr. Smith")
+                                        .subject("PE")
+                                        .studentGroup("3A", 10)
+                                        .build())),
                 Arguments.of("not enough teachers", List.of(new Classroom("room1", 100)),
                         List.of(new Timeslot(LocalTime.of(10, 0))),
                         List.of(
-                        CourseMother.newCourse()
-                                .teacher("Mr. Johnson")
-                                .subject("English")
-                                .studentGroup("1A", 10)
-                                .build(),
-                        CourseMother.newCourse()
-                                .teacher("Ms. Johnson")
-                                .subject("Math")
-                                .studentGroup("2A", 10)
-                                .build()
-                )),
+                                CourseMother.newCourse()
+                                        .teacher("Mr. Johnson")
+                                        .subject("English")
+                                        .studentGroup("1A", 10)
+                                        .build(),
+                                CourseMother.newCourse()
+                                        .teacher("Ms. Johnson")
+                                        .subject("Math")
+                                        .studentGroup("2A", 10)
+                                        .build())),
                 Arguments.of("classroom cannot hold students",
                         List.of(new Classroom("room1", 10)),
                         List.of(new Timeslot(LocalTime.of(10, 0))),
@@ -280,8 +265,6 @@ public class SolverTest {
                                         .teacher("Mr. Johnson")
                                         .subject("English")
                                         .studentGroup("1A", 15)
-                                        .build()
-                ))
-        );
+                                        .build())));
     }
 }
