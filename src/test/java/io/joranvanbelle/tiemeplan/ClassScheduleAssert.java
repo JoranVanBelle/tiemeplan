@@ -50,12 +50,16 @@ public class ClassScheduleAssert extends AbstractAssert<ClassScheduleAssert, Cla
         isNotNull();
 
         var expectedCoursesList = Arrays.stream(expectedCourses)
-                .sorted(Comparator.comparing((ScheduledCourse c) -> c.timeslot().value())
+                .sorted(Comparator
+                        .comparing((ScheduledCourse c) -> String.join("-", c.timeslot().dayOfWeek().toString(),
+                                c.timeslot().startTime().toString()))
                         .thenComparing(c -> c.classroom().name()))
                 .toList();
 
         List<ScheduledCourse> actualCourses = actual.assignedCourses();
-        actualCourses.sort(Comparator.comparing((ScheduledCourse c) -> c.timeslot().value())
+        actualCourses.sort(Comparator
+                .comparing((ScheduledCourse c) -> String.join("-", c.timeslot().dayOfWeek().toString(),
+                        c.timeslot().startTime().toString()))
                 .thenComparing(c -> c.classroom().name()));
 
         if (!actualCourses.equals(expectedCoursesList)) {

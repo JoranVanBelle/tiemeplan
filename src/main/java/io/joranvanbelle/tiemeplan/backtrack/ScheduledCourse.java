@@ -4,6 +4,7 @@ import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 public record ScheduledCourse(Classroom classroom, Timeslot timeslot, Course course) {
@@ -31,8 +32,8 @@ public record ScheduledCourse(Classroom classroom, Timeslot timeslot, Course cou
             return this;
         }
 
-        public Builder timeslot(LocalTime timeslot) {
-            this.timeslot = new Timeslot(timeslot);
+        public Builder timeslot(DayOfWeek dayOfWeek, LocalTime timeslot) {
+            this.timeslot = new Timeslot(dayOfWeek, timeslot);
             return this;
         }
 

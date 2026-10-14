@@ -1,6 +1,7 @@
 package io.joranvanbelle.tiemeplan.variables;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-public record Timeslot(LocalTime value) {
+public record Timeslot(DayOfWeek dayOfWeek, LocalTime startTime) {
 }

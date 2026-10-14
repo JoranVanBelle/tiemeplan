@@ -8,6 +8,7 @@ import io.joranvanbelle.tiemeplan.variables.Subject;
 import io.joranvanbelle.tiemeplan.variables.Teacher;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 public class ScheduledCourseMother {
@@ -16,7 +17,8 @@ public class ScheduledCourseMother {
 
         private String classroom = "room1";
         private int classroomCapacity = 10;
-        private LocalTime timeslot = LocalTime.of(10, 0);
+        private DayOfWeek dayOfWeek = DayOfWeek.MONDAY;
+        private LocalTime startTime = LocalTime.of(10, 0);
         private String teacher = "Mr. Johnson";
         private String subject = "English";
         private String studentGroup = "1A";
@@ -32,8 +34,13 @@ public class ScheduledCourseMother {
             return this;
         }
 
-        public Builder timeslot(LocalTime timeslot) {
-            this.timeslot = timeslot;
+        public Builder dayOfWeek(DayOfWeek dayOfWeek) {
+            this.dayOfWeek = dayOfWeek;
+            return this;
+        }
+
+        public Builder startTime(LocalTime startTime) {
+            this.startTime = startTime;
             return this;
         }
 
@@ -60,7 +67,7 @@ public class ScheduledCourseMother {
         public ScheduledCourse build() {
             return new ScheduledCourse(
                     new Classroom(classroom, classroomCapacity),
-                    new Timeslot(timeslot),
+                    new Timeslot(dayOfWeek, startTime),
                     new Course(
                             new Teacher(teacher),
                             new Subject(subject),

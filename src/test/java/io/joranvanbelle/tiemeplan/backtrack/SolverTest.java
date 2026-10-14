@@ -6,6 +6,7 @@ import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Stream;
@@ -24,9 +25,9 @@ public class SolverTest {
         // given
         var availableClassRooms = List.of(new Classroom("room1", 100));
         var availableTimeslots = List.of(
-                new Timeslot(LocalTime.of(10, 0)),
-                new Timeslot(LocalTime.of(11, 0)),
-                new Timeslot(LocalTime.of(12, 0)));
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)),
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0)),
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(12, 0)));
         var solver = new Solver(availableClassRooms, availableTimeslots);
 
         // when
@@ -55,7 +56,7 @@ public class SolverTest {
                         .containsOnlyScheduledCoursed(
                                 ScheduledCourse.newBuilder()
                                         .classroom("room1", 100)
-                                        .timeslot(LocalTime.of(10, 0))
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))
                                         .course(Course.newBuilder()
                                                 .teacher("Mr. Johnson")
                                                 .subject("English")
@@ -64,7 +65,7 @@ public class SolverTest {
                                         .build(),
                                 ScheduledCourse.newBuilder()
                                         .classroom("room1", 100)
-                                        .timeslot(LocalTime.of(11, 0))
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0))
                                         .course(Course.newBuilder()
                                                 .teacher("Ms. Johansen")
                                                 .subject("Math")
@@ -73,7 +74,7 @@ public class SolverTest {
                                         .build(),
                                 ScheduledCourse.newBuilder()
                                         .classroom("room1", 100)
-                                        .timeslot(LocalTime.of(12, 0))
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(12, 0))
                                         .course(Course.newBuilder()
                                                 .teacher("Mr. Smith")
                                                 .subject("PE")
@@ -89,9 +90,9 @@ public class SolverTest {
                 new Classroom("room1", 100),
                 new Classroom("room2", 100));
         var availableTimeslots = List.of(
-                new Timeslot(LocalTime.of(10, 0)),
-                new Timeslot(LocalTime.of(11, 0)),
-                new Timeslot(LocalTime.of(12, 0)));
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)),
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0)),
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(12, 0)));
         var solver = new Solver(availableClassRooms, availableTimeslots);
 
         // when
@@ -120,7 +121,7 @@ public class SolverTest {
                         .containsOnlyScheduledCoursed(
                                 ScheduledCourse.newBuilder()
                                         .classroom("room1", 100)
-                                        .timeslot(LocalTime.of(10, 0))
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))
                                         .course(Course.newBuilder()
                                                 .teacher("Mr. Johnson")
                                                 .subject("English")
@@ -129,7 +130,7 @@ public class SolverTest {
                                         .build(),
                                 ScheduledCourse.newBuilder()
                                         .classroom("room2", 100)
-                                        .timeslot(LocalTime.of(10, 0))
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))
                                         .course(Course.newBuilder()
                                                 .teacher("Ms. Johansen")
                                                 .subject("Math")
@@ -138,7 +139,7 @@ public class SolverTest {
                                         .build(),
                                 ScheduledCourse.newBuilder()
                                         .classroom("room1", 100)
-                                        .timeslot(LocalTime.of(11, 0))
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0))
                                         .course(Course.newBuilder()
                                                 .teacher("Mr. Smith")
                                                 .subject("PE")
@@ -155,7 +156,7 @@ public class SolverTest {
                 new Classroom("room2", 20),
                 new Classroom("room3", 10));
         var availableTimeslots = List.of(
-                new Timeslot(LocalTime.of(10, 0)));
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)));
         var solver = new Solver(availableClassRooms, availableTimeslots);
 
         // when
@@ -174,7 +175,7 @@ public class SolverTest {
                         .containsOnlyScheduledCoursed(
                                 ScheduledCourse.newBuilder()
                                         .classroom("room2", 20)
-                                        .timeslot(LocalTime.of(10, 0))
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))
                                         .course(Course.newBuilder()
                                                 .teacher("Mr. Johnson")
                                                 .subject("English")
@@ -206,8 +207,8 @@ public class SolverTest {
         return Stream.of(
                 Arguments.of("not enough rooms", List.of(new Classroom("room1", 100)),
                         List.of(
-                                new Timeslot(LocalTime.of(10, 0)),
-                                new Timeslot(LocalTime.of(11, 0))),
+                                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)),
+                                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0))),
                         List.of(
                                 CourseMother.newCourse()
                                         .teacher("Mr. Johnson")
@@ -227,7 +228,7 @@ public class SolverTest {
                 Arguments.of("not enough timeslots", List.of(
                         new Classroom("room1", 100),
                         new Classroom("room2", 100)),
-                        List.of(new Timeslot(LocalTime.of(10, 0))),
+                        List.of(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))),
                         List.of(
                                 CourseMother.newCourse()
                                         .teacher("Mr. Johnson")
@@ -245,7 +246,7 @@ public class SolverTest {
                                         .studentGroup("3A", 10)
                                         .build())),
                 Arguments.of("not enough teachers", List.of(new Classroom("room1", 100)),
-                        List.of(new Timeslot(LocalTime.of(10, 0))),
+                        List.of(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))),
                         List.of(
                                 CourseMother.newCourse()
                                         .teacher("Mr. Johnson")
@@ -259,7 +260,7 @@ public class SolverTest {
                                         .build())),
                 Arguments.of("classroom cannot hold students",
                         List.of(new Classroom("room1", 10)),
-                        List.of(new Timeslot(LocalTime.of(10, 0))),
+                        List.of(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))),
                         List.of(
                                 CourseMother.newCourse()
                                         .teacher("Mr. Johnson")
