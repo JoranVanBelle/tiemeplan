@@ -4,6 +4,7 @@ import io.joranvanbelle.tiemeplan.ClassScheduleAssert;
 import io.joranvanbelle.tiemeplan.CourseMother;
 import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
+import io.joranvanbelle.tiemeplan.variables.StudentGroup;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
 import java.time.DayOfWeek;
@@ -179,7 +180,121 @@ public class SolverTest {
                                         .course(Course.newBuilder()
                                                 .teacher("Mr. Johnson")
                                                 .subject("English")
-                                                .studentGroup("1A", 1)
+                                                .studentGroup("1A", 15)
+                                                .build())
+                                        .build()));
+    }
+
+    @Test
+    void assignStudentGroupToCorrectClassroom_multipleStudentGroupTogether() {
+        // given
+        var availableClassRooms = List.of(
+                new Classroom("room1", 10),
+                new Classroom("room2", 20));
+        var availableTimeslots = List.of(
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)));
+        var solver = new Solver(availableClassRooms, availableTimeslots);
+
+        // when
+        var courses = List.of(
+                CourseMother.newCourse()
+                        .teacher("Mr. Johnson")
+                        .subject("English")
+                        .studentGroup(
+                                List.of(new StudentGroup("1A", 10),
+                                        new StudentGroup("2B", 10)))
+                        .build());
+        var result = solver.solve(courses);
+
+        // then
+        assertThat(result).isInstanceOfSatisfying(BacktrackResult.Success.class,
+                res -> ClassScheduleAssert.assertThat(res.solution())
+                        .hasNumberOfCourses(1)
+                        .containsOnlyScheduledCoursed(
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room2", 20)
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Mr. Johnson")
+                                                .subject("English")
+                                                .studentGroup(
+                                                        List.of(new StudentGroup("1A", 10),
+                                                                new StudentGroup("2B", 10)))
+                                                .build())
+                                        .build()));
+    }
+
+    @Test
+    void scheduleStudentGroupsCorrectly() {
+        // given
+        var availableClassRooms = List.of(
+                new Classroom("room1", 10),
+                new Classroom("room2", 20));
+        var availableTimeslots = List.of(
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)),
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0)),
+                new Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 0)));
+        var solver = new Solver(availableClassRooms, availableTimeslots);
+
+        // when
+        StudentGroup studentGroup1 = new StudentGroup("1A", 10);
+        StudentGroup studentGroup2 = new StudentGroup("2B", 10);
+        var courses = List.of(
+                CourseMother.newCourse()
+                        .teacher("Ms. Johansen")
+                        .subject("Math")
+                        .studentGroup(
+                                List.of(studentGroup2))
+                        .build(),
+                CourseMother.newCourse()
+                        .teacher("Mr. Johnson")
+                        .subject("English")
+                        .studentGroup(
+                                List.of(studentGroup1, studentGroup2))
+                        .build(),
+                CourseMother.newCourse()
+                        .teacher("Ms. Johansen")
+                        .subject("Math")
+                        .studentGroup(List.of(studentGroup1))
+                        .build());
+        var result = solver.solve(courses);
+
+        // then
+        // todo - more favorable would be to schedule Ms. Johansen at 10 and at 11 so
+        // that she had no gaps in her schedule
+        assertThat(result).isInstanceOfSatisfying(BacktrackResult.Success.class,
+                res -> ClassScheduleAssert.assertThat(res.solution())
+                        .hasNumberOfCourses(3)
+                        .containsOnlyScheduledCoursed(
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room1", 10)
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Ms. Johansen")
+                                                .subject("Math")
+                                                .studentGroup(
+                                                        List.of(studentGroup2))
+                                                .build())
+                                        .build(),
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room2", 20)
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Mr. Johnson")
+                                                .subject("English")
+                                                .studentGroup(
+                                                        List.of(studentGroup1,
+                                                                studentGroup2))
+                                                .build())
+                                        .build(),
+                                ScheduledCourse.newBuilder()
+                                        .classroom("room1", 10)
+                                        .timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 0))
+                                        .course(Course.newBuilder()
+                                                .teacher("Ms. Johansen")
+                                                .subject("Math")
+                                                .studentGroup(
+                                                        List.of(studentGroup1))
                                                 .build())
                                         .build()));
     }
@@ -265,7 +380,8 @@ public class SolverTest {
                                 CourseMother.newCourse()
                                         .teacher("Mr. Johnson")
                                         .subject("English")
-                                        .studentGroup("1A", 15)
+                                        .studentGroup(List.of(new StudentGroup("1A", 7),
+                                                new StudentGroup("2B", 8)))
                                         .build())));
     }
 }

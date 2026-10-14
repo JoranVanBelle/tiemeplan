@@ -10,8 +10,14 @@ import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScheduledCourseMother {
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
 
     public static class Builder {
 
@@ -21,8 +27,7 @@ public class ScheduledCourseMother {
         private LocalTime startTime = LocalTime.of(10, 0);
         private String teacher = "Mr. Johnson";
         private String subject = "English";
-        private String studentGroup = "1A";
-        private int studentGroupSize = 10;
+        private List<StudentGroup> studentGroups = new ArrayList<>(List.of(new StudentGroup("1A", 10)));
 
         public Builder classroom(String classroom) {
             this.classroom = classroom;
@@ -54,24 +59,19 @@ public class ScheduledCourseMother {
             return this;
         }
 
-        public Builder studentGroup(String studentGroup) {
-            this.studentGroup = studentGroup;
+        public Builder addStudentGroups(List<StudentGroup> studentGroups) {
+            this.studentGroups = studentGroups;
             return this;
         }
 
-        public Builder studentGroupSize(int studentGroupSize) {
-            this.studentGroupSize = studentGroupSize;
-            return this;
-        }
-
-        public ScheduledCourse build() {
+        public ScheduledCourse build() throws IllegalAccessException {
             return new ScheduledCourse(
                     new Classroom(classroom, classroomCapacity),
                     new Timeslot(dayOfWeek, startTime),
                     new Course(
                             new Teacher(teacher),
                             new Subject(subject),
-                            new StudentGroup(studentGroup, studentGroupSize)));
+                            studentGroups));
         }
     }
 

@@ -5,6 +5,8 @@ import io.joranvanbelle.tiemeplan.variables.StudentGroup;
 import io.joranvanbelle.tiemeplan.variables.Subject;
 import io.joranvanbelle.tiemeplan.variables.Teacher;
 
+import java.util.List;
+
 public class CourseMother {
 
     public static Builder newCourse() {
@@ -15,7 +17,7 @@ public class CourseMother {
 
         private Teacher teacher = new Teacher("Ms. Smith");
         private Subject subject = new Subject("Math");
-        private StudentGroup studentGroup = new StudentGroup("6A", 10);
+        private List<StudentGroup> studentGroups = List.of(new StudentGroup("6A", 10));
 
         public Builder teacher(String teacher) {
             this.teacher = new Teacher(teacher);
@@ -28,12 +30,17 @@ public class CourseMother {
         }
 
         public Builder studentGroup(String studentGroup, int size) {
-            this.studentGroup = new StudentGroup(studentGroup, size);
+            this.studentGroups = List.of(new StudentGroup(studentGroup, size));
+            return this;
+        }
+
+        public Builder studentGroup(List<StudentGroup> studentGroups) {
+            this.studentGroups = studentGroups;
             return this;
         }
 
         public Course build() {
-            return new Course(teacher, subject, studentGroup);
+            return new Course(teacher, subject, studentGroups);
         }
     }
 
