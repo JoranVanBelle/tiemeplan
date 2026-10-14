@@ -1,9 +1,15 @@
 package io.joranvanbelle.tiemeplan.variables;
 
+import java.util.List;
+
 public record Course(
         Teacher teacher,
         Subject subject,
-        StudentGroup studentGroup) {
+        List<StudentGroup> studentGroups) {
+
+    public int numberOfParticipant() {
+        return studentGroups.stream().map(StudentGroup::size).reduce(0, Integer::sum);
+    }
 
     public static Builder newBuilder() {
         return new Builder();
@@ -12,8 +18,7 @@ public record Course(
     public static final class Builder {
         private Teacher teacher;
         private Subject subject;
-
-        private StudentGroup studentGroup;
+        private List<StudentGroup> studentGroups;
 
         private Builder() {
         }
@@ -39,17 +44,17 @@ public record Course(
         }
 
         public Builder studentGroup(String studentGroup, int size) {
-            this.studentGroup = new StudentGroup(studentGroup, size);
+            this.studentGroups = List.of(new StudentGroup(studentGroup, size));
             return this;
         }
 
-        public Builder studentGroup(StudentGroup studentGroup) {
-            this.studentGroup = studentGroup;
+        public Builder studentGroup(List<StudentGroup> studentGroup) {
+            this.studentGroups = studentGroup;
             return this;
         }
 
         public Course build() {
-            return new Course(teacher, subject, studentGroup);
+            return new Course(teacher, subject, studentGroups);
         }
     }
 }

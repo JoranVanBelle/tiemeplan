@@ -32,7 +32,7 @@ public class ClassSchedule {
     }
 
     public boolean isValid(Classroom classroom, Timeslot timeslot, Course course) {
-        if (isRoomOccupied(classroom, timeslot) || !classroom.canHoldStudentGroup(course.studentGroup().size())) {
+        if (isRoomOccupied(classroom, timeslot) || !classroom.canHoldStudentGroup(course.numberOfParticipant())) {
             return false;
         }
         if (isTeacherOccupied(timeslot, course)) {
@@ -53,17 +53,19 @@ public class ClassSchedule {
     }
 
     private boolean isStudentGroupOccupied(Timeslot timeslot, Course course) {
-        return this.assignedStudentGroups.getOrDefault(course.studentGroup(), Collections.emptyList())
-                .contains(timeslot);
+        return course.studentGroups().stream()
+                .anyMatch(studentGroup -> this.assignedStudentGroups.getOrDefault(studentGroup, Collections.emptyList())
+                        .contains(timeslot));
     }
 
     public ClassSchedule assign(Classroom classroom, Timeslot timeslot, Course course) {
         var scheduledCourse = new ScheduledCourse(classroom, timeslot, course);
 
         this.assignedCourses.add(scheduledCourse);
-        this.assignedClassRooms.computeIfAbsent(classroom, k -> new ArrayList<>()).add(timeslot);
-        this.assignedTeachers.computeIfAbsent(course.teacher(), k -> new ArrayList<>()).add(timeslot);
-        this.assignedStudentGroups.computeIfAbsent(course.studentGroup(), k -> new ArrayList<>()).add(timeslot);
+        this.assignedClassRooms.computeIfAbsent(classroom, _ -> new ArrayList<>()).add(timeslot);
+        this.assignedTeachers.computeIfAbsent(course.teacher(), _ -> new ArrayList<>()).add(timeslot);
+        course.studentGroups().forEach(studentGroup -> this.assignedStudentGroups
+                .computeIfAbsent(studentGroup, _ -> new ArrayList<>()).add(timeslot));
 
         return this;
     }
@@ -72,7 +74,7 @@ public class ClassSchedule {
         assignedCourses.removeLast();
         this.assignedClassRooms.get(classroom).remove(timeslot);
         this.assignedTeachers.get(course.teacher()).remove(timeslot);
-        this.assignedStudentGroups.get(course.studentGroup()).remove(timeslot);
+        course.studentGroups().forEach(studentGroup -> this.assignedStudentGroups.get(studentGroup).remove(timeslot));
 
         return this;
     }
