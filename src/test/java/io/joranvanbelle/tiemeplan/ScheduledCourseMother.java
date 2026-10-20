@@ -23,6 +23,7 @@ public class ScheduledCourseMother {
 
         private String classroom = "room1";
         private int classroomCapacity = 10;
+        private List<Timeslot> occupiedTimeslots = new ArrayList<>();
         private DayOfWeek dayOfWeek = DayOfWeek.MONDAY;
         private LocalTime startTime = LocalTime.of(10, 0);
         private String teacher = "Mr. Johnson";
@@ -36,6 +37,11 @@ public class ScheduledCourseMother {
 
         public Builder classroomCapacity(int classroomCapacity) {
             this.classroomCapacity = classroomCapacity;
+            return this;
+        }
+
+        public Builder classRoomOccupied(List<Timeslot> occupiedTimeslots) {
+            this.occupiedTimeslots = occupiedTimeslots;
             return this;
         }
 
@@ -66,7 +72,7 @@ public class ScheduledCourseMother {
 
         public ScheduledCourse build() throws IllegalAccessException {
             return new ScheduledCourse(
-                    new Classroom(classroom, classroomCapacity),
+                    new Classroom(classroom, classroomCapacity, occupiedTimeslots),
                     new Timeslot(dayOfWeek, startTime),
                     new Course(
                             new Teacher(teacher),

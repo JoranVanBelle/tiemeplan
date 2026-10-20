@@ -6,6 +6,7 @@ import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.List;
 
 public record ScheduledCourse(Classroom classroom, Timeslot timeslot, Course course) {
 
@@ -22,8 +23,13 @@ public record ScheduledCourse(Classroom classroom, Timeslot timeslot, Course cou
         private Builder() {
         }
 
-        public Builder classroom(String name, int capacity) {
-            this.classroom = new Classroom(name, capacity);
+        public Builder alwaysFreeClassroom(String name, int capacity) {
+            this.classroom = new Classroom(name, capacity, List.of());
+            return this;
+        }
+
+        public Builder classroom(String name, int capacity, List<Timeslot> occupiedTimeslots) {
+            this.classroom = new Classroom(name, capacity, occupiedTimeslots);
             return this;
         }
 

@@ -31,6 +31,15 @@ public class ClassSchedule {
         return new ClassSchedule();
     }
 
+    public ClassSchedule addUnavailability(List<Classroom> classrooms) {
+        classrooms.forEach(unavailableClassroom -> {
+            this.assignedClassRooms.computeIfAbsent(unavailableClassroom, _ -> new ArrayList<>())
+                    .addAll(unavailableClassroom.occupiedTimeslots());
+        });
+
+        return this;
+    }
+
     public boolean isValid(Classroom classroom, Timeslot timeslot, Course course) {
         if (isRoomOccupied(classroom, timeslot) || !classroom.canHoldStudentGroup(course.numberOfParticipant())) {
             return false;

@@ -29,7 +29,11 @@ public class Solver {
 
     public BacktrackResult solve(List<Course> totalCourses) {
 
-        return solve(0, totalCourses, ClassSchedule.empty());
+        var occupiedClassRooms = classRooms.stream()
+                .filter(c -> !c.occupiedTimeslots().isEmpty())
+                .toList();
+
+        return solve(0, totalCourses, ClassSchedule.empty().addUnavailability(occupiedClassRooms));
     }
 
     private BacktrackResult solve(int courseIdx, List<Course> totalCourses, ClassSchedule classSchedule) {
