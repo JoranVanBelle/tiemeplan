@@ -2,7 +2,7 @@
 
 **Project:** Tiemeplan  
 **Last Updated:** 2026-10-22  
-**Status:** In progress — M0 and M1 completed, M2 next  
+**Status:** In progress — M0, M1, M2, M3 completed, M4 next  
 **Constraint:** Replace `Tiemeplan.main` to launch JavaFX app; use MVVM with JavaFX properties/bindings; add FXML support; support light/dark; cancellable solver; JSON/YAML save/load; exports PDF/CSV/PNG; jpackage + JReleaser.
 
 ## Milestone Overview
@@ -11,8 +11,8 @@
 |---|---|---|---|---|
 | M0: Project scaffolding | Add deps/plugins, package structure, entry point | `mvn compile` succeeds | None | **Completed** |
 | M1: Domain/UI mapping & models | UI models/mappers, ViewModels skeleton | Unit tests pass | M0 | **Completed** |
-| M2: Solver service with cancellation | Cooperative cancellation in Solver + SolverService | Unit tests for cancel | M0, existing Solver | Pending |
-| M3: UI shell & navigation/theming | App shell, navigation, light/dark, CSS | App launches (smoke) | M0,M1 | Pending |
+| M2: Solver service with cancellation | Cooperative cancellation in Solver + SolverService | Unit tests for cancel | M0, existing Solver | **Completed** |
+| M3: UI shell & navigation/theming | App shell, navigation, light/dark, CSS | App launches (smoke) | M0,M1 | **Completed** |
 | M4: Configuration screens | Setup, Courses (reorder), Constraints | Manual UI flow works | M1,M3 | Pending |
 | M5: Solve flow & results | Solving overlay, Timetable, NoSolution | End-to-end small scenario works | M2,M4 | Pending |
 | M6: Scenario persistence | JSON/YAML save/load, schema versioning | Roundtrip tests pass | M1,M4 | Pending |
@@ -92,27 +92,34 @@
 
 **Dependencies:** completed. Unblocks M2 (consumes domain lists), M3 (ViewModels for screens), M4 (bindings/reorder), M6 (serialize `ScenarioDto`).
 
-### M2: Solver service with cancellation
-**Tasks:**
-- Modify `Solver` to accept `CancellationToken` (cooperative). Check token in recursive calls/loops; return early on cancel.
-- Add `BacktrackResult.Cancelled` (or equivalent) to represent cancellation (separate from `NoSolutionFound`).
-- Create `service/SolverService` using `javafx.concurrent.Service<Task<BacktrackResult>>`.
-- Wire cancellation from Task to token.
+### M2: Solver service with cancellation — **Completed**
+**Tasks (done):**
+- Added `util/CancellationToken` with cooperative cancellation.
+- Extended `BacktrackResult` with `Cancelled(ClassSchedule previousState)`.
+- Modified `Solver` to accept `CancellationToken` (optional for backward compatibility), checking it at recursion entry and in loops; returns `Cancelled` when canceled and propagates cancellation up the backtrack stack.
+- Created `service/SolverService` extending `javafx.concurrent.Service<BacktrackResult>` with setters/reset and a `Task` that runs `Solver.solve(...)` with a token.
+- Added `SolverCancellationTest` for early cancellation.
 
-**Verification:** Unit tests: cancel mid-solve returns cancelled state; algorithm stops (no unnecessary work after cancel). Existing solver tests still pass.
+**Verification (done):**
+- `mvn clean verify` → BUILD SUCCESS, **28 tests, 0 failures** (added cancellation test).
+- Existing `SolverTest` (11 tests) still pass with unchanged assertions.
+- `module-info.java` exports `service` and `util`.
 
-**Dependencies:** M0, existing solver. **Blocking:** Requires changing core solver API.
+**Dependencies:** M0, existing solver. Unblocks M5 (Solve flow can use `SolverService` and handle `Cancelled`).
 
-### M3: UI shell & navigation/theming
-**Tasks:**
-- `app/TiemeplanApp`: load theme, set scene, init navigation.
-- `NavigationService`, base views/controllers.
-- `ThemeService` with light/dark, persist preference (location TBD).
-- CSS with variables and theme files.
+### M3: UI shell & navigation/theming — **Completed**
+**Tasks (done):**
+- Added `javafx.fxml` and `java.prefs` requirements; opened UI packages to `javafx.fxml`. Added placeholder `ui`/`ui.controller` markers.
+- Created `service/ThemeService` with light/dark themes, CSS variables, and `Preferences` persistence.
+- Created `ui/navigation/Screen`, `ViewProvider`, `NavigationService` with placeholder views for Setup/Courses/Constraints/Solving/Timetable/NoSolution/ScenarioManager/About.
+- Rebuilt `app/TiemeplanApp` as a shell: `BorderPane` root with toolbar (nav buttons, theme toggle), content pane, navigation wired, minimum size 900×650.
+- Added CSS: `resources/css/styles.css`, `theme-light.css`, `theme-dark.css`.
 
-**Verification:** App launches, can switch themes, navigate between placeholder screens.
+**Verification (done):**
+- `mvn clean compile` and `mvn test` succeed; **28 tests, 0 failures**.
+- `mvn javafx:run` launches the shell with toolbar and placeholder screens; theme toggle and navigation work.
 
-**Dependencies:** M0,M1
+**Dependencies:** M0,M1. Unblocks M4 (configuration screens can be built on the shell and use ViewModels).
 
 ### M4: Configuration screens
 **Tasks:**
@@ -166,7 +173,7 @@
 **Dependencies:** M0,M5,M6,M7
 
 ## Critical Path
-M0 (completed) → M1 (completed) → M2 → M4 → M5, with M3 in parallel early. M6/M7 after M5. M8 last.
+M0 (completed) → M1 (completed) → M2 (completed) → M3 (completed) → M4 → M5. M6/M7 after M5. M8 last.
 
 ## Unresolved Dependencies/Decisions
 See API mapping doc for storage and release details requiring approval (scenario storage location, theme persistence, solver cancelled state shape, signing/notarization).
