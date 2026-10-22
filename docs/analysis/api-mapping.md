@@ -49,9 +49,9 @@
 |---|---|---|
 | `javafx-fxml` | FXML views/controllers | Required for MVVM with FXML option |
 | `javafx-swing` | `SwingFXUtils` for PNG export | `Node.snapshot()` + Swing conversion |
-| Jackson (databind, yaml, jsr310) | JSON/YAML serialization | For scenarios; JavaTimeModule needed |
+| Jackson 3 (`tools.jackson.core:jackson-databind`, `tools.jackson.dataformat:jackson-dataformat-yaml`) | JSON/YAML serialization | Java time support is bundled in Jackson 3 databind (`ext.javatime`); no separate JSR-310 module needed |
 | OpenPDF | PDF export | For timetable PDF |
-| Apache Commons CSV | CSV export | For timetable CSV |
+| OpenCSV | CSV export | For timetable CSV |
 | JavaFX Maven plugin | `mvn javafx:run` | Dev |
 | jpackage Maven plugin | App-images/installers | Packaging |
 | JReleaser Maven plugin | Release to GitHub | Publishing |
