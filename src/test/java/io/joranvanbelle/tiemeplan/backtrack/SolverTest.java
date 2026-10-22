@@ -443,7 +443,7 @@ public class SolverTest {
                         new Classroom("room1", 15,
                                 List.of(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)),
                                         new Timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0)))),
-                        new Classroom("room2", 15, List.of())),
+                        new Classroom("room2", 5, List.of())),
                         List.of(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0)),
                                 new Timeslot(DayOfWeek.MONDAY, LocalTime.of(11, 0))),
                         List.of(
