@@ -1,4 +1,5 @@
 .root {
+    -fx-background-color: #0b1026;
     -color-bg: #0b1026;
     -color-surface: #151b2f;
     -color-surface-2: #1f2540;
@@ -21,10 +22,22 @@
 .titled-pane:collapsed > .title { -fx-background-radius: 12px; -fx-border-radius: 12px; }
 
 .scroll-pane { -fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0; }
-.scroll-pane > .viewport { -fx-background-color: transparent; }
+.scroll-pane > .viewport { -fx-background-color: -color-bg; }
 .scroll-pane .corner { -fx-background-color: -color-surface; }
 
+.timetable-grid { -fx-background-color: -color-border; }
+.timetable-header { -fx-background-color: -color-surface-2; -fx-text-fill: -color-text; }
+.timetable-time-cell { -fx-background-color: -color-surface-2; }
+.timetable-time-day { -fx-text-fill: -color-text; }
+.timetable-time { -fx-text-fill: -color-text-secondary; }
+.timetable-cell { -fx-background-color: -color-surface; }
+.timetable-cell-empty { -fx-background-color: -color-surface; }
+.timetable-subject { -fx-text-fill: -color-text; }
+.timetable-teacher { -fx-text-fill: -color-text; }
+.timetable-groups { -fx-text-fill: -color-text-secondary; }
+
 .split-pane { -fx-background-color: -color-bg; }
+.scroll-pane > .viewport { -fx-background-color: transparent; }
 
 .table-view { -fx-background-color: -color-surface; -fx-background-insets: 0; }
 .table-view .column-header-background { -fx-background-color: -color-surface-2; }

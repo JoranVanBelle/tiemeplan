@@ -1,16 +1,17 @@
 .root {
-    -color-bg: #f7f9fc;
+    -fx-background-color: #f7f8fb;
+    -color-bg: #f7f8fb;
     -color-surface: #ffffff;
-    -color-surface-2: #f3f6fb;
-    -color-border: #e5e9f2;
-    -color-text: #1f2937;
-    -color-text-secondary: #4b5563;
+    -color-surface-2: #eef1f8;
+    -color-border: #c9cddc;
+    -color-text: #151825;
+    -color-text-secondary: #3f465a;
     -color-accent: #2563eb;
-    -color-accent-subtle: rgba(37, 99, 235, 0.12);
-    -color-success: #16a34a;
-    -color-warning: #d97706;
+    -color-accent-subtle: rgba(37, 99, 235, 0.14);
+    -color-success: #22c55e;
+    -color-warning: #f59e0b;
     -color-error: #dc2626;
-    -color-focus: rgba(37, 99, 235, 0.4);
+    -color-focus: rgba(37, 99, 235, 0.45);
 }
 
 .screen { -fx-background-color: -color-bg; }
@@ -23,6 +24,17 @@
 .scroll-pane { -fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0; }
 .scroll-pane > .viewport { -fx-background-color: transparent; }
 .scroll-pane .corner { -fx-background-color: -color-surface; }
+
+.timetable-grid { -fx-background-color: -color-border; }
+.timetable-header { -fx-background-color: -color-surface-2; -fx-text-fill: -color-text; }
+.timetable-time-cell { -fx-background-color: -color-surface-2; }
+.timetable-time-day { -fx-text-fill: -color-text; }
+.timetable-time { -fx-text-fill: -color-text-secondary; }
+.timetable-cell { -fx-background-color: -color-surface; }
+.timetable-cell-empty { -fx-background-color: -color-surface; }
+.timetable-subject { -fx-text-fill: -color-text; }
+.timetable-teacher { -fx-text-fill: -color-text; }
+.timetable-groups { -fx-text-fill: -color-text-secondary; }
 
 .split-pane { -fx-background-color: -color-bg; }
 
