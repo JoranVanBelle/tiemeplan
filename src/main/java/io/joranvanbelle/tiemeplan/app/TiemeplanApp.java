@@ -3,6 +3,7 @@ package io.joranvanbelle.tiemeplan.app;
 import io.joranvanbelle.tiemeplan.service.ThemeService;
 import io.joranvanbelle.tiemeplan.ui.navigation.NavigationService;
 import io.joranvanbelle.tiemeplan.ui.navigation.Screen;
+import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -20,6 +21,7 @@ public class TiemeplanApp extends Application {
 
     private final ThemeService themeService = new ThemeService();
     private NavigationService navigationService;
+    private final ScenarioViewModel scenarioViewModel = new ScenarioViewModel();
 
     @Override
     public void start(Stage stage) {
@@ -28,12 +30,12 @@ public class TiemeplanApp extends Application {
 
         BorderPane contentPane = new BorderPane();
         contentPane.getStyleClass().add("content-pane");
-        navigationService = new NavigationService(contentPane);
+        navigationService = new NavigationService(contentPane, scenarioViewModel);
 
         root.setCenter(contentPane);
 
         ToolBar toolBar = new ToolBar();
-        toolBar.getStyleClass().add("app-toolbar");
+        toolBar.getStyleClass().add("toolbar");
         toolBar.setPadding(new Insets(6, 12, 6, 12));
 
         Label appTitle = new Label("Tiemeplan");
