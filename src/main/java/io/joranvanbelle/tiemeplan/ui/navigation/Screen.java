@@ -6,7 +6,8 @@ public enum Screen {
     CONSTRAINTS("Constraints"),
     SOLVING("Solving"),
     TIMETABLE("Timetable"),
-    ABOUT("About");
+    ABOUT("About"),
+    SCENARIO("Scenario");
 
     private final String title;
 

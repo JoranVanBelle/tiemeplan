@@ -1,6 +1,7 @@
 package io.joranvanbelle.tiemeplan.viewmodel;
 
 import io.joranvanbelle.tiemeplan.model.ScenarioDto;
+import io.joranvanbelle.tiemeplan.model.ScenarioMapper;
 import io.joranvanbelle.tiemeplan.model.SubjectDto;
 import io.joranvanbelle.tiemeplan.model.TeacherDto;
 import io.joranvanbelle.tiemeplan.variables.Classroom;
@@ -83,12 +84,13 @@ public class ScenarioViewModel {
 
     public ScenarioDto toDto() {
         return new ScenarioDto(schemaVersion,
-                courses.stream().map(CourseViewModel::toDto).toList(),
-                classrooms.stream().map(ClassroomViewModel::toDto).toList(),
-                timeslots.stream().map(TimeslotViewModel::toDto).toList(),
-                teachers.stream().map(TeacherDto::new).toList(),
-                subjects.stream().map(SubjectDto::new).toList(),
-                studentGroups.stream().map(StudentGroupViewModel::toDto).toList());
+                io.joranvanbelle.tiemeplan.util.AppInfo.getVersion(),
+                courses.stream().map(c -> ScenarioMapper.toDto(c.toDomain())).toList(),
+                classrooms.stream().map(c -> ScenarioMapper.toDto(c.toDomain())).toList(),
+                timeslots.stream().map(t -> ScenarioMapper.toDto(t.toDomain())).toList(),
+                teachers.stream().map(t -> ScenarioMapper.toDto(new Teacher(t))).toList(),
+                subjects.stream().map(s -> ScenarioMapper.toDto(new Subject(s))).toList(),
+                studentGroups.stream().map(g -> ScenarioMapper.toDto(g.toDomain())).toList());
     }
 
     public void loadFrom(ScenarioDto dto) {
