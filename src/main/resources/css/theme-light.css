@@ -1,15 +1,41 @@
 .root {
-    -color-bg: #f8f9fa;
+    -color-bg: #f7f9fc;
     -color-surface: #ffffff;
-    -color-surface-2: #f1f3f5;
-    -color-border: #e5e7eb;
-    -color-text: #111827;
-    -color-text-secondary: #6b7280;
-    -color-accent: #4f46e5;
-    -color-accent-hover: #4338ca;
-    -color-accent-subtle: rgba(79, 70, 229, 0.1);
-    -color-success: #059669;
+    -color-surface-2: #f3f6fb;
+    -color-border: #e5e9f2;
+    -color-text: #1f2937;
+    -color-text-secondary: #4b5563;
+    -color-accent: #2563eb;
+    -color-accent-subtle: rgba(37, 99, 235, 0.12);
+    -color-success: #16a34a;
     -color-warning: #d97706;
     -color-error: #dc2626;
-    -color-focus: #6366f1;
+    -color-focus: rgba(37, 99, 235, 0.4);
 }
+
+.screen { -fx-background-color: -color-bg; }
+
+.titled-pane { -fx-text-fill: -color-text; -fx-background-color: transparent; }
+.titled-pane > .title { -fx-background-color: -color-surface; -fx-border-color: -color-border; -fx-background-radius: 12px 12px 0 0; -fx-border-radius: 12px 12px 0 0; }
+.titled-pane > *.content { -fx-background-color: -color-surface; -fx-border-color: -color-border; -fx-border-width: 0 1px 1px 1px; -fx-background-radius: 0 0 12px 12px; -fx-border-radius: 0 0 12px 12px; -fx-padding: 10px; }
+.titled-pane:collapsed > .title { -fx-background-radius: 12px; -fx-border-radius: 12px; }
+
+.scroll-pane { -fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0; }
+.scroll-pane > .viewport { -fx-background-color: transparent; }
+.scroll-pane .corner { -fx-background-color: -color-surface; }
+
+.split-pane { -fx-background-color: -color-bg; }
+
+.table-view { -fx-background-color: -color-surface; -fx-background-insets: 0; }
+.table-view .column-header-background { -fx-background-color: -color-surface-2; }
+.table-row-cell { -fx-background-color: -color-surface; -fx-text-fill: -color-text; }
+.table-cell { -fx-text-fill: -color-text; }
+.table-row-cell:selected, .table-row-cell:focused:selected { -fx-background-color: -color-accent-subtle; }
+.table-row-cell:selected .table-cell, .table-row-cell:focused:selected .table-cell { -fx-text-fill: -color-text; }
+.table-row-cell:hover { -fx-background-color: -color-surface-2; }
+.list-view { -fx-background-color: -color-surface; -fx-background-insets: 0; }
+.list-cell { -fx-background-color: -color-surface; -fx-text-fill: -color-text; }
+.list-cell:filled:hover { -fx-background-color: -color-surface-2; }
+.list-cell:filled:selected { -fx-background-color: -color-accent-subtle; -fx-text-fill: -color-text; }
+.toolbar { -fx-background-color: -color-surface; -fx-border-color: transparent transparent -color-border transparent; }
+.border-pane, .tool-bar { -fx-background-color: -color-surface; }

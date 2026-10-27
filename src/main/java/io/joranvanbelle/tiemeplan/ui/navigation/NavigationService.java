@@ -8,6 +8,7 @@ import io.joranvanbelle.tiemeplan.ui.view.ScenarioManagerView;
 import io.joranvanbelle.tiemeplan.ui.view.SetupView;
 import io.joranvanbelle.tiemeplan.ui.view.SolvingView;
 import io.joranvanbelle.tiemeplan.ui.view.TimetableView;
+import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -16,18 +17,24 @@ import javafx.scene.layout.BorderPane;
 
 public class NavigationService {
     private final BorderPane contentPane;
+    private final ScenarioViewModel scenarioViewModel;
     private final Map<Screen, ViewProvider> providers = new EnumMap<>(Screen.class);
     private Screen currentScreen;
 
     public NavigationService(BorderPane contentPane) {
+        this(contentPane, new ScenarioViewModel());
+    }
+
+    public NavigationService(BorderPane contentPane, ScenarioViewModel scenarioViewModel) {
         this.contentPane = contentPane;
+        this.scenarioViewModel = scenarioViewModel;
         registerDefaults();
     }
 
     private void registerDefaults() {
-        providers.put(Screen.SETUP, new SetupView());
-        providers.put(Screen.COURSES, new CoursesView());
-        providers.put(Screen.CONSTRAINTS, new ConstraintsView());
+        providers.put(Screen.SETUP, new SetupView(scenarioViewModel));
+        providers.put(Screen.COURSES, new CoursesView(scenarioViewModel));
+        providers.put(Screen.CONSTRAINTS, new ConstraintsView(scenarioViewModel, this));
         providers.put(Screen.SOLVING, new SolvingView());
         providers.put(Screen.TIMETABLE, new TimetableView());
         providers.put(Screen.NO_SOLUTION, new NoSolutionView());

@@ -1,8 +1,8 @@
 # Implementation Plan (Milestones)
 
 **Project:** Tiemeplan  
-**Last Updated:** 2026-10-22  
-**Status:** In progress — M0, M1, M2, M3 completed, M4 next  
+**Last Updated:** 2026-10-27  
+**Status:** In progress — M0–M4 completed, M5 next  
 **Constraint:** Replace `Tiemeplan.main` to launch JavaFX app; use MVVM with JavaFX properties/bindings; add FXML support; support light/dark; cancellable solver; JSON/YAML save/load; exports PDF/CSV/PNG; jpackage + JReleaser.
 
 ## Milestone Overview
@@ -13,7 +13,7 @@
 | M1: Domain/UI mapping & models | UI models/mappers, ViewModels skeleton | Unit tests pass | M0 | **Completed** |
 | M2: Solver service with cancellation | Cooperative cancellation in Solver + SolverService | Unit tests for cancel | M0, existing Solver | **Completed** |
 | M3: UI shell & navigation/theming | App shell, navigation, light/dark, CSS | App launches (smoke) | M0,M1 | **Completed** |
-| M4: Configuration screens | Setup, Courses (reorder), Constraints | Manual UI flow works | M1,M3 | Pending |
+| M4: Configuration screens | Setup, Courses (reorder), Constraints | Manual UI flow works | M1,M3 | **Completed** |
 | M5: Solve flow & results | Solving overlay, Timetable, NoSolution | End-to-end small scenario works | M2,M4 | Pending |
 | M6: Scenario persistence | JSON/YAML save/load, schema versioning | Roundtrip tests pass | M1,M4 | Pending |
 | M7: Exports | PDF/CSV/PNG export | Files generated correctly | M5 | Pending |
@@ -182,3 +182,13 @@ Additional open items:
 - **IDE module-path configuration (verify before M4):** use the module path in IntelliJ; classpath execution triggers the Linux GTK `_runLoop` NPE.
 - **Timeslot template generator (before/with M4):** analyze presets/configurable generation, preview/replace/append UX, and duplicate handling; timeslots remain free-form until then.
 - **JavaFX native-access warning:** consider `--enable-native-access=javafx.graphics` in run/packaging configuration.
+
+### M4 - Configuration Screens (Completed)
+- **Goal**: Full Setup and Courses UIs with shared ScenarioViewModel, validation navigation, and intuitive editing.
+- **Status**: Completed
+- **Changes**:
+  - Setup: Scrollable TitledPanes for Classrooms, Timeslots, Teachers, Subjects, Student Groups with add forms, duplicate checks and warnings, inline editing (tables for name/capacity/day/time/size, ListView for teachers/subjects), selection styling.
+  - Courses: Add dialog with teacher/subject/group selection, drag-and-drop reorder with row numbers and up/down buttons, participant count display.
+  - Constraints: ValidationBanner wired to ScenarioValidator, issue clicks navigate to Setup/Courses, Solve enabled only when no errors.
+  - Theme: Dark/light fixes for toolbar, titled panes, scrollbars/corners, table/list selection.
+- **Verification**: `mvn compile` and `mvn test` pass (28 tests).
