@@ -35,10 +35,8 @@ public class NavigationService {
         providers.put(Screen.SETUP, new SetupView(scenarioViewModel));
         providers.put(Screen.COURSES, new CoursesView(scenarioViewModel));
         providers.put(Screen.CONSTRAINTS, new ConstraintsView(scenarioViewModel, this));
+        providers.put(Screen.TIMETABLE, new TimetableView(this));
         providers.put(Screen.SOLVING, new SolvingView());
-        providers.put(Screen.TIMETABLE, new TimetableView());
-        providers.put(Screen.NO_SOLUTION, new NoSolutionView());
-        providers.put(Screen.SCENARIO_MANAGER, new ScenarioManagerView());
         providers.put(Screen.ABOUT, new AboutView());
     }
 

@@ -1,5 +1,6 @@
 package io.joranvanbelle.tiemeplan.app;
 
+import io.joranvanbelle.tiemeplan.service.AppState;
 import io.joranvanbelle.tiemeplan.service.ThemeService;
 import io.joranvanbelle.tiemeplan.ui.navigation.NavigationService;
 import io.joranvanbelle.tiemeplan.ui.navigation.Screen;
@@ -21,7 +22,7 @@ public class TiemeplanApp extends Application {
 
     private final ThemeService themeService = new ThemeService();
     private NavigationService navigationService;
-    private final ScenarioViewModel scenarioViewModel = new ScenarioViewModel();
+    private final ScenarioViewModel scenarioViewModel = AppState.getInstance().getScenarioViewModel();
 
     @Override
     public void start(Stage stage) {
@@ -45,14 +46,12 @@ public class TiemeplanApp extends Application {
         Button coursesBtn = new Button("Courses");
         Button constraintsBtn = new Button("Constraints");
         Button timetableBtn = new Button("Timetable");
-        Button scenarioBtn = new Button("Scenario Manager");
         Button aboutBtn = new Button("About");
 
         setupBtn.getStyleClass().add("nav-button");
         coursesBtn.getStyleClass().add("nav-button");
         constraintsBtn.getStyleClass().add("nav-button");
         timetableBtn.getStyleClass().add("nav-button");
-        scenarioBtn.getStyleClass().add("nav-button");
         aboutBtn.getStyleClass().add("nav-button");
 
         setupBtn.setOnAction(e -> {
@@ -71,10 +70,6 @@ public class TiemeplanApp extends Application {
             setActive(timetableBtn);
             navigationService.navigateTo(Screen.TIMETABLE);
         });
-        scenarioBtn.setOnAction(e -> {
-            setActive(scenarioBtn);
-            navigationService.navigateTo(Screen.SCENARIO_MANAGER);
-        });
         aboutBtn.setOnAction(e -> {
             setActive(aboutBtn);
             navigationService.navigateTo(Screen.ABOUT);
@@ -86,8 +81,7 @@ public class TiemeplanApp extends Application {
         Button themeToggle = new Button("Toggle Theme");
         themeToggle.getStyleClass().addAll("nav-button", "theme-toggle");
 
-        toolBar.getItems().addAll(appTitle, setupBtn, coursesBtn, constraintsBtn, timetableBtn, scenarioBtn,
-                aboutBtn, spacer, themeToggle);
+        toolBar.getItems().addAll(appTitle, setupBtn, coursesBtn, constraintsBtn, timetableBtn, aboutBtn, spacer, themeToggle);
         root.setTop(toolBar);
 
         Scene scene = new Scene(root, 1200, 800);

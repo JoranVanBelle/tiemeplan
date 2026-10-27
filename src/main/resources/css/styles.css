@@ -1,5 +1,14 @@
 .root {
     -fx-font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    -fx-background-color: -color-bg;
+}
+
+.app-root {
+    -fx-background-color: -color-bg;
+}
+
+.content-pane {
+    -fx-background-color: -color-bg;
 }
 
 .screen {
@@ -245,10 +254,12 @@
 
 .scroll-pane {
     -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
 .scroll-pane > .viewport {
-    -fx-background-color: -color-bg;
+    -fx-background-color: transparent;
 }
 
 .scroll-bar:vertical {
@@ -262,6 +273,10 @@
 .scroll-bar:vertical .thumb {
     -fx-background-color: -color-border;
     -fx-background-radius: 8px;
+}
+
+.scroll-pane .corner {
+    -fx-background-color: -color-surface;
 }
 
 .scroll-bar:horizontal {
@@ -283,4 +298,75 @@
 
 .table-view .filler {
     -fx-background-color: -color-surface;
+}
+
+.timetable-grid {
+    -fx-background-color: -color-border;
+    -fx-padding: 1;
+}
+
+.timetable-header {
+    -fx-background-color: -color-surface-2;
+    -fx-text-fill: -color-text;
+    -fx-font-weight: 600;
+    -fx-padding: 10 12;
+    -fx-alignment: CENTER;
+    -fx-min-width: 140px;
+}
+
+.timetable-corner {
+    -fx-min-width: 110px;
+}
+
+.timetable-time-cell {
+    -fx-background-color: -color-surface-2;
+    -fx-padding: 8 10;
+    -fx-alignment: CENTER;
+    -fx-min-width: 110px;
+}
+
+.timetable-time-day {
+    -fx-text-fill: -color-text;
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+}
+
+.timetable-time {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 11px;
+}
+
+.timetable-cell {
+    -fx-background-color: -color-surface;
+    -fx-padding: 10 12;
+    -fx-spacing: 2;
+    -fx-min-width: 140px;
+    -fx-min-height: 70px;
+}
+
+.timetable-cell-empty {
+    -fx-background-color: -color-surface;
+    -fx-min-width: 140px;
+    -fx-min-height: 70px;
+    -fx-padding: 10 12;
+}
+
+.timetable-subject {
+    -fx-text-fill: -color-text;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+}
+
+.timetable-teacher {
+    -fx-text-fill: -color-text;
+    -fx-font-size: 12px;
+}
+
+.timetable-groups {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 11px;
+}
+
+.timetable-scroll {
+    -fx-background-color: transparent;
 }

@@ -16,6 +16,7 @@ public class SolverService extends Service<BacktrackResult> {
     private List<Classroom> classrooms;
     private List<Timeslot> timeslots;
     private List<Course> courses;
+    private CancellationToken cancellationToken;
 
     public void setClassrooms(List<Classroom> classrooms) {
         this.classrooms = classrooms;
@@ -35,12 +36,19 @@ public class SolverService extends Service<BacktrackResult> {
         setCourses(courses);
     }
 
+    public void requestCancel() {
+        if (cancellationToken != null) {
+            cancellationToken.cancel();
+        }
+        cancel();
+    }
+
     @Override
     protected Task<BacktrackResult> createTask() {
         var solverClassrooms = classrooms == null ? List.<Classroom>of() : List.copyOf(classrooms);
         var solverTimeslots = timeslots == null ? List.<Timeslot>of() : List.copyOf(timeslots);
         var solverCourses = courses == null ? List.<Course>of() : List.copyOf(courses);
-        var cancellationToken = new CancellationToken();
+        cancellationToken = new CancellationToken();
 
         return new Task<>() {
             @Override
