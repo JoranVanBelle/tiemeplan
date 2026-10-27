@@ -6,6 +6,7 @@ import java.util.List;
 
 public record ScenarioDto(
         @JsonProperty("schemaVersion") int schemaVersion,
+        @JsonProperty("appVersion") String appVersion,
         @JsonProperty("courses") List<CourseDto> courses,
         @JsonProperty("classrooms") List<ClassroomDto> classrooms,
         @JsonProperty("timeslots") List<TimeslotDto> timeslots,
@@ -24,8 +25,14 @@ public record ScenarioDto(
         studentGroups = studentGroups == null ? List.of() : List.copyOf(studentGroups);
     }
 
+    public ScenarioDto(int schemaVersion, List<CourseDto> courses, List<ClassroomDto> classrooms,
+            List<TimeslotDto> timeslots, List<TeacherDto> teachers, List<SubjectDto> subjects,
+            List<StudentGroupDto> studentGroups) {
+        this(schemaVersion, null, courses, classrooms, timeslots, teachers, subjects, studentGroups);
+    }
+
     public static ScenarioDto empty() {
-        return new ScenarioDto(CURRENT_SCHEMA_VERSION, List.of(), List.of(), List.of(), List.of(), List.of(),
+        return new ScenarioDto(CURRENT_SCHEMA_VERSION, null, List.of(), List.of(), List.of(), List.of(), List.of(),
                 List.of());
     }
 }

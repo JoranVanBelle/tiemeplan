@@ -46,12 +46,14 @@ public class TiemeplanApp extends Application {
         Button coursesBtn = new Button("Courses");
         Button constraintsBtn = new Button("Constraints");
         Button timetableBtn = new Button("Timetable");
+        Button scenarioBtn = new Button("Scenario");
         Button aboutBtn = new Button("About");
 
         setupBtn.getStyleClass().add("nav-button");
         coursesBtn.getStyleClass().add("nav-button");
         constraintsBtn.getStyleClass().add("nav-button");
         timetableBtn.getStyleClass().add("nav-button");
+        scenarioBtn.getStyleClass().add("nav-button");
         aboutBtn.getStyleClass().add("nav-button");
 
         setupBtn.setOnAction(e -> {
@@ -70,6 +72,10 @@ public class TiemeplanApp extends Application {
             setActive(timetableBtn);
             navigationService.navigateTo(Screen.TIMETABLE);
         });
+        scenarioBtn.setOnAction(e -> {
+            setActive(scenarioBtn);
+            navigationService.navigateTo(Screen.SCENARIO);
+        });
         aboutBtn.setOnAction(e -> {
             setActive(aboutBtn);
             navigationService.navigateTo(Screen.ABOUT);
@@ -81,7 +87,7 @@ public class TiemeplanApp extends Application {
         Button themeToggle = new Button("Toggle Theme");
         themeToggle.getStyleClass().addAll("nav-button", "theme-toggle");
 
-        toolBar.getItems().addAll(appTitle, setupBtn, coursesBtn, constraintsBtn, timetableBtn, aboutBtn, spacer, themeToggle);
+        toolBar.getItems().addAll(appTitle, setupBtn, coursesBtn, constraintsBtn, timetableBtn, scenarioBtn, aboutBtn, spacer, themeToggle);
         root.setTop(toolBar);
 
         Scene scene = new Scene(root, 1200, 800);

@@ -38,6 +38,7 @@ public class NavigationService {
         providers.put(Screen.TIMETABLE, new TimetableView(this));
         providers.put(Screen.SOLVING, new SolvingView());
         providers.put(Screen.ABOUT, new AboutView());
+        providers.put(Screen.SCENARIO, new ScenarioManagerView());
     }
 
     public void navigateTo(Screen screen) {
