@@ -7,7 +7,9 @@ import io.joranvanbelle.tiemeplan.ui.component.ValidationBanner;
 import io.joranvanbelle.tiemeplan.ui.navigation.NavigationService;
 import io.joranvanbelle.tiemeplan.ui.navigation.Screen;
 import io.joranvanbelle.tiemeplan.ui.navigation.ViewProvider;
+import io.joranvanbelle.tiemeplan.viewmodel.ClassroomViewModel;
 import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
+import io.joranvanbelle.tiemeplan.viewmodel.TimeslotViewModel;
 import io.joranvanbelle.tiemeplan.viewmodel.ValidationIssue;
 import io.joranvanbelle.tiemeplan.viewmodel.ValidationSeverity;
 
@@ -71,6 +73,7 @@ public class ConstraintsView implements ViewProvider {
         VBox resourcesCard = createCard("Resources", "Classrooms, teachers, subjects, student groups");
         VBox coursesCard = createCard("Courses", "Course definitions and participant mappings");
         VBox timeslotsCard = createCard("Timeslots", "Available time slots");
+        VBox blockedCard = createBlockedClassroomsCard();
 
         Button solveButton = new Button("Solve");
         solveButton.getStyleClass().add("primary-button");
@@ -89,7 +92,7 @@ public class ConstraintsView implements ViewProvider {
         actions.getChildren().addAll(solveButton, setupBtn, coursesBtn);
 
         VBox content = new VBox(16);
-        content.getChildren().addAll(resourcesCard, coursesCard, timeslotsCard, validationBanner, actions);
+        content.getChildren().addAll(resourcesCard, coursesCard, timeslotsCard, blockedCard, validationBanner, actions);
 
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
@@ -182,6 +185,101 @@ public class ConstraintsView implements ViewProvider {
         Label s = new Label(subtitle);
         s.getStyleClass().add("card-subtitle");
         card.getChildren().addAll(t, s);
+        return card;
+    }
+
+    private VBox createBlockedClassroomsCard() {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("card");
+        Label title = new Label("Blocked Classrooms");
+        title.getStyleClass().add("card-title");
+        Label subtitle = new Label("Mark specific timeslots as unavailable for a classroom.");
+        subtitle.getStyleClass().add("card-subtitle");
+
+        javafx.scene.control.ComboBox<ClassroomViewModel> roomCombo = new javafx.scene.control.ComboBox<>();
+        roomCombo.setItems(scenarioViewModel.classrooms());
+        roomCombo.setPromptText("Select classroom");
+        roomCombo.setPrefWidth(220);
+        roomCombo.setConverter(new javafx.util.StringConverter<ClassroomViewModel>() {
+            @Override
+            public String toString(ClassroomViewModel object) {
+                return object == null ? "" : object.getName();
+            }
+
+            @Override
+            public ClassroomViewModel fromString(String string) {
+                return null;
+            }
+        });
+
+        javafx.scene.control.ComboBox<TimeslotViewModel> slotCombo = new javafx.scene.control.ComboBox<>();
+        slotCombo.setItems(scenarioViewModel.timeslots());
+        slotCombo.setPromptText("Select timeslot");
+        slotCombo.setPrefWidth(220);
+        slotCombo.setConverter(new javafx.util.StringConverter<TimeslotViewModel>() {
+            @Override
+            public String toString(TimeslotViewModel object) {
+                return object == null ? "" : object.getDayOfWeek() + " " + object.getStartTime();
+            }
+
+            @Override
+            public TimeslotViewModel fromString(String string) {
+                return null;
+            }
+        });
+
+        javafx.scene.control.Button addBlock = new javafx.scene.control.Button("Block Timeslot");
+        addBlock.getStyleClass().add("secondary-button");
+        addBlock.setOnAction(e -> {
+            ClassroomViewModel room = roomCombo.getValue();
+            TimeslotViewModel slot = slotCombo.getValue();
+            if (room == null || slot == null) {
+                return;
+            }
+            boolean exists = room.occupiedTimeslots().stream()
+                    .anyMatch(ts -> ts.getDayOfWeek() == slot.getDayOfWeek() && ts.getStartTime().equals(slot.getStartTime()));
+            if (!exists) {
+                room.occupiedTimeslots().add(new TimeslotViewModel(slot.getDayOfWeek(), slot.getStartTime()));
+            }
+        });
+
+        HBox form = new HBox(10);
+        form.setAlignment(Pos.CENTER_LEFT);
+        form.getChildren().addAll(roomCombo, slotCombo, addBlock);
+
+        javafx.scene.control.ListView<TimeslotViewModel> blockedList = new javafx.scene.control.ListView<>();
+        blockedList.setPrefHeight(120);
+        blockedList.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(TimeslotViewModel item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getDayOfWeek() + " " + item.getStartTime());
+                }
+            }
+        });
+
+        roomCombo.valueProperty().addListener((obs, oldv, newv) -> {
+            blockedList.setItems(newv == null ? null : newv.occupiedTimeslots());
+        });
+        if (roomCombo.getValue() != null) {
+            blockedList.setItems(roomCombo.getValue().occupiedTimeslots());
+        }
+
+        javafx.scene.control.Button removeBlock = new javafx.scene.control.Button("Remove Selected");
+        removeBlock.getStyleClass().add("ghost-button");
+        removeBlock.setOnAction(e -> {
+            ClassroomViewModel room = roomCombo.getValue();
+            TimeslotViewModel selected = blockedList.getSelectionModel().getSelectedItem();
+            if (room == null || selected == null) {
+                return;
+            }
+            room.occupiedTimeslots().remove(selected);
+        });
+
+        card.getChildren().addAll(title, subtitle, form, new Label("Blocked for selected classroom"), blockedList, removeBlock);
         return card;
     }
 

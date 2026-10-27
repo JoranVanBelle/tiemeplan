@@ -2,7 +2,7 @@
 
 **Project:** Tiemeplan  
 **Last Updated:** 2026-10-27  
-**Status:** In progress — M0–M5 completed, M6 next  
+**Status:** In progress — M0–M6 completed, M7 next  
 **Constraint:** Replace `Tiemeplan.main` to launch JavaFX app; use MVVM with JavaFX properties/bindings; add FXML support; support light/dark; cancellable solver; JSON/YAML save/load; exports PDF/CSV/PNG; jpackage + JReleaser.
 
 ## Milestone Overview
@@ -15,7 +15,7 @@
 | M3: UI shell & navigation/theming | App shell, navigation, light/dark, CSS | App launches (smoke) | M0,M1 | **Completed** |
 | M4: Configuration screens | Setup, Courses (reorder), Constraints | Manual UI flow works | M1,M3 | **Completed** |
 | M5: Solve flow & results | Solving overlay, Timetable, NoSolution | End-to-end small scenario works | M2,M4 | **Completed** |
-| M6: Scenario persistence | JSON/YAML save/load, schema versioning | Roundtrip tests pass | M1,M4 | Pending |
+| M6: Scenario persistence | JSON/YAML save/load, schema versioning | Roundtrip tests pass | M1,M4 | **Completed** |
 | M7: Exports | PDF/CSV/PNG export | Files generated correctly | M5 | Pending |
 | M8: Packaging & release | jpackage + JReleaser, CI workflow | Artifacts built per platform (plan only) | M0,M5,M6,M7 | Pending |
 
@@ -202,4 +202,15 @@ Additional open items:
   - `SolverService`: supports restart/cancel via `requestCancel()`, returns `BacktrackResult`.
   - `TimetableView`: Grid by timeslots/classrooms with clear cells, messages and navigation buttons for No solution/Cancelled/None.
   - Navigation: added `TIMETABLE` screen, restored `ABOUT`, removed unused screens.
+- **Verification**: `mvn compile` passes.
+
+### M6 - Scenario Persistence (Completed)
+- **Goal**: JSON/YAML save/load with schema versioning and safety guard.
+- **Status**: Completed
+- **Changes**:
+  - Added `AppInfo` with Maven resource filtering for app version.
+  - Extended `ScenarioDto` with `appVersion`, kept `schemaVersion` manual-only with guard.
+  - Added `ScenarioPersistenceService` for JSON/YAML load/save with schema validation.
+  - Added Scenario tab with import/export (JSON/YAML) and default filenames.
+  - Added blocked classroom timeslots management in Constraints.
 - **Verification**: `mvn compile` passes.
