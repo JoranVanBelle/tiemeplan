@@ -3,10 +3,14 @@ module io.joranvanbelle.tiemeplan {
     requires javafx.graphics;
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.swing;
+    requires java.desktop;
     requires java.prefs;
     requires tools.jackson.databind;
     requires tools.jackson.dataformat.yaml;
     requires com.fasterxml.jackson.annotation;
+    requires com.github.librepdf.openpdf;
+    requires com.opencsv;
 
     exports io.joranvanbelle.tiemeplan;
     exports io.joranvanbelle.tiemeplan.app;
@@ -15,6 +19,7 @@ module io.joranvanbelle.tiemeplan {
     exports io.joranvanbelle.tiemeplan.model;
     exports io.joranvanbelle.tiemeplan.viewmodel;
     exports io.joranvanbelle.tiemeplan.service;
+    exports io.joranvanbelle.tiemeplan.service.export;
     exports io.joranvanbelle.tiemeplan.util;
     exports io.joranvanbelle.tiemeplan.ui.navigation;
 

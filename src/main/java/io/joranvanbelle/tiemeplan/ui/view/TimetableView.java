@@ -3,34 +3,89 @@ package io.joranvanbelle.tiemeplan.ui.view;
 import io.joranvanbelle.tiemeplan.backtrack.BacktrackResult;
 import io.joranvanbelle.tiemeplan.backtrack.ClassSchedule;
 import io.joranvanbelle.tiemeplan.backtrack.ScheduledCourse;
-import io.joranvanbelle.tiemeplan.service.AppState;
+import io.joranvanbelle.tiemeplan.service.export.ExportException;
+import io.joranvanbelle.tiemeplan.service.export.ExportFileNames;
+import io.joranvanbelle.tiemeplan.service.export.ExportResult;
+import io.joranvanbelle.tiemeplan.service.export.ExportService;
+import io.joranvanbelle.tiemeplan.service.export.ExportTheme;
+import io.joranvanbelle.tiemeplan.service.export.ScenarioSnapshot;
+import io.joranvanbelle.tiemeplan.service.export.TimetableExportRequest;
+import io.joranvanbelle.tiemeplan.ui.dialog.TimetableExportDialog;
+import io.joranvanbelle.tiemeplan.ui.navigation.NavigationService;
 import io.joranvanbelle.tiemeplan.ui.navigation.Screen;
 import io.joranvanbelle.tiemeplan.ui.navigation.ViewProvider;
 import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
+import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
-
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.prefs.Preferences;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 
 public class TimetableView implements ViewProvider {
-    private final io.joranvanbelle.tiemeplan.ui.navigation.NavigationService navigationService;
+
+    private static final String LAST_DIRECTORY_KEY = "lastExportDirectory";
+
+    private final NavigationService navigationService;
+    private final ScenarioViewModel scenarioViewModel;
+    private final Supplier<BacktrackResult> resultSupplier;
+    private final ExportService exportService;
+    private final Supplier<ExportTheme> exportThemeSupplier;
+    private final Preferences preferences = Preferences.userNodeForPackage(TimetableView.class);
+
+    private Button exportButton;
+    private Label statusLabel;
+    private ProgressIndicator progressIndicator;
+    private Button cancelExportButton;
+    private Task<ExportResult> activeTask;
 
     public TimetableView() {
-        this(null);
+        this(null, new ScenarioViewModel(), () -> null, new ExportService(), () -> ExportTheme.LIGHT);
     }
 
-    public TimetableView(io.joranvanbelle.tiemeplan.ui.navigation.NavigationService navigationService) {
-        this.navigationService = navigationService;
+    public TimetableView(NavigationService navigationService) {
+        this(navigationService, new ScenarioViewModel(), () -> null, new ExportService(), () -> ExportTheme.LIGHT);
     }
+
+    public TimetableView(
+            NavigationService navigationService,
+            ScenarioViewModel scenarioViewModel,
+            Supplier<BacktrackResult> resultSupplier,
+            ExportService exportService,
+            Supplier<ExportTheme> exportThemeSupplier) {
+        this.navigationService = navigationService;
+        this.scenarioViewModel = scenarioViewModel;
+        this.resultSupplier = resultSupplier;
+        this.exportService = exportService;
+        this.exportThemeSupplier = exportThemeSupplier;
+    }
+
     @Override
     public String getTitle() {
         return "Timetable";
@@ -42,78 +97,140 @@ public class TimetableView implements ViewProvider {
         root.getStyleClass().add("screen");
         root.setPadding(new Insets(24));
 
-        VBox header = new VBox(4);
-        header.getStyleClass().add("screen-header");
+        VBox headerText = new VBox(4);
+        headerText.getStyleClass().add("screen-header");
         Label titleLabel = new Label("Timetable");
         titleLabel.getStyleClass().add("screen-title");
         Label subtitleLabel = new Label("Scheduled courses by timeslot and classroom.");
         subtitleLabel.getStyleClass().add("screen-subtitle");
-        header.getChildren().addAll(titleLabel, subtitleLabel);
+        headerText.getChildren().addAll(titleLabel, subtitleLabel);
 
-        BacktrackResult result = AppState.getInstance().getLastResult();
+        BacktrackResult result = resultSupplier.get();
         switch (result) {
             case BacktrackResult.Success(ClassSchedule solution) -> {
-                root.getChildren().addAll(header, createGrid(solution));
+                exportButton = new Button("Export");
+                exportButton.getStyleClass().add("primary-button");
+                exportButton.setTooltip(new Tooltip("Export the timetable as PDF, CSV, or PNG."));
+                exportButton.setAccessibleText("Export timetable");
+                exportButton.setOnAction(event -> openExportDialog(solution));
+                root.getChildren().addAll(headerWithAction(headerText, exportButton), createStatusRow(),
+                        createGrid(solution));
                 return root;
             }
             case BacktrackResult.NoSolutionFound _ -> {
-                VBox card = new VBox(12);
-                card.getStyleClass().add("card");
-                Label title = new Label("No solution found");
-                title.getStyleClass().add("card-title");
-                Label msg = new Label("The solver could not find a valid timetable for the current setup. Check constraints and available timeslots/classrooms.");
-                msg.getStyleClass().add("card-subtitle");
-                msg.setWrapText(true);
-                HBox actions = new HBox(10);
-                javafx.scene.control.Button setup = new javafx.scene.control.Button("Go to Setup");
-                setup.getStyleClass().add("secondary-button");
-                setup.setOnAction(e -> navigate(Screen.SETUP));
-                javafx.scene.control.Button courses = new javafx.scene.control.Button("Go to Courses");
-                courses.getStyleClass().add("secondary-button");
-                courses.setOnAction(e -> navigate(Screen.COURSES));
-                javafx.scene.control.Button constraints = new javafx.scene.control.Button("Go to Constraints");
-                constraints.getStyleClass().add("primary-button");
-                constraints.setOnAction(e -> navigate(Screen.CONSTRAINTS));
-                actions.getChildren().addAll(setup, courses, constraints);
-                card.getChildren().addAll(title, msg, actions);
-                root.getChildren().addAll(header, card);
+                root.getChildren().addAll(header(headerText), noSolutionCard());
                 return root;
             }
             case BacktrackResult.Cancelled _ -> {
-                VBox card = new VBox(12);
-                card.getStyleClass().add("card");
-                Label title = new Label("Solving cancelled");
-                title.getStyleClass().add("card-title");
-                Label msg = new Label("The solving process was cancelled.");
-                msg.getStyleClass().add("card-subtitle");
-                msg.setWrapText(true);
-                root.getChildren().addAll(header, card);
+                root.getChildren().addAll(header(headerText), cancelledCard());
                 return root;
             }
             case null, default -> {
-                VBox card = new VBox(12);
-                card.getStyleClass().add("card");
-                Label title = new Label("No timetable yet");
-                title.getStyleClass().add("card-title");
-                Label msg = new Label("Configure your scenario in Setup and Courses, then run Solve from the Constraints screen.");
-                msg.getStyleClass().add("card-subtitle");
-                msg.setWrapText(true);
-                HBox actions = new HBox(10);
-                javafx.scene.control.Button setup = new javafx.scene.control.Button("Go to Setup");
-                setup.getStyleClass().add("secondary-button");
-                setup.setOnAction(e -> navigate(Screen.SETUP));
-                javafx.scene.control.Button courses = new javafx.scene.control.Button("Go to Courses");
-                courses.getStyleClass().add("secondary-button");
-                courses.setOnAction(e -> navigate(Screen.COURSES));
-                javafx.scene.control.Button constraints = new javafx.scene.control.Button("Go to Constraints");
-                constraints.getStyleClass().add("primary-button");
-                constraints.setOnAction(e -> navigate(Screen.CONSTRAINTS));
-                actions.getChildren().addAll(setup, courses, constraints);
-                card.getChildren().addAll(title, msg, actions);
-                root.getChildren().addAll(header, card);
+                root.getChildren().addAll(header(headerText), noTimetableCard());
                 return root;
             }
         }
+    }
+
+    private HBox header(VBox headerText) {
+        HBox header = new HBox(12, headerText);
+        header.setAlignment(Pos.CENTER_LEFT);
+        return header;
+    }
+
+    private HBox headerWithAction(VBox headerText, Button action) {
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox header = new HBox(12, headerText, spacer, action);
+        header.setAlignment(Pos.CENTER_LEFT);
+        return header;
+    }
+
+    private HBox createStatusRow() {
+        statusLabel = new Label();
+        statusLabel.getStyleClass().add("export-status");
+        statusLabel.setVisible(false);
+        statusLabel.setManaged(false);
+
+        progressIndicator = new ProgressIndicator();
+        progressIndicator.setPrefSize(18, 18);
+        progressIndicator.setMaxSize(18, 18);
+        progressIndicator.setVisible(false);
+        progressIndicator.setManaged(false);
+
+        cancelExportButton = new Button("Cancel export");
+        cancelExportButton.getStyleClass().add("ghost-button");
+        cancelExportButton.setVisible(false);
+        cancelExportButton.setManaged(false);
+        cancelExportButton.setOnAction(event -> {
+            if (activeTask != null) {
+                activeTask.cancel();
+            }
+        });
+
+        HBox row = new HBox(10, progressIndicator, statusLabel, cancelExportButton);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private VBox noSolutionCard() {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("card");
+        Label title = new Label("No solution found");
+        title.getStyleClass().add("card-title");
+        Label msg = new Label(
+                "The solver could not find a valid timetable for the current setup. Check constraints and available timeslots/classrooms.");
+        msg.getStyleClass().add("card-subtitle");
+        msg.setWrapText(true);
+        HBox actions = new HBox(10);
+        Button setup = new Button("Go to Setup");
+        setup.getStyleClass().add("secondary-button");
+        setup.setOnAction(e -> navigate(Screen.SETUP));
+        Button courses = new Button("Go to Courses");
+        courses.getStyleClass().add("secondary-button");
+        courses.setOnAction(e -> navigate(Screen.COURSES));
+        Button constraints = new Button("Go to Constraints");
+        constraints.getStyleClass().add("primary-button");
+        constraints.setOnAction(e -> navigate(Screen.CONSTRAINTS));
+        actions.getChildren().addAll(setup, courses, constraints);
+        card.getChildren().addAll(title, msg, actions);
+        return card;
+    }
+
+    private VBox cancelledCard() {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("card");
+        Label title = new Label("Solving cancelled");
+        title.getStyleClass().add("card-title");
+        Label msg = new Label("The solving process was cancelled.");
+        msg.getStyleClass().add("card-subtitle");
+        msg.setWrapText(true);
+        card.getChildren().addAll(title, msg);
+        return card;
+    }
+
+    private VBox noTimetableCard() {
+        VBox card = new VBox(12);
+        card.getStyleClass().add("card");
+        Label title = new Label("No timetable yet");
+        title.getStyleClass().add("card-title");
+        Label msg = new Label(
+                "Configure your scenario in Setup and Courses, then run Solve from the Constraints screen.");
+        msg.getStyleClass().add("card-subtitle");
+        msg.setWrapText(true);
+        HBox actions = new HBox(10);
+        Button setup = new Button("Go to Setup");
+        setup.getStyleClass().add("secondary-button");
+        setup.setOnAction(e -> navigate(Screen.SETUP));
+        Button courses = new Button("Go to Courses");
+        courses.getStyleClass().add("secondary-button");
+        courses.setOnAction(e -> navigate(Screen.COURSES));
+        Button constraints = new Button("Go to Constraints");
+        constraints.getStyleClass().add("primary-button");
+        constraints.setOnAction(e -> navigate(Screen.CONSTRAINTS));
+        actions.getChildren().addAll(setup, courses, constraints);
+        card.getChildren().addAll(title, msg, actions);
+        return card;
     }
 
     private Node createGrid(ClassSchedule schedule) {
@@ -163,12 +280,6 @@ public class TimetableView implements ViewProvider {
         return sp;
     }
 
-    private void navigate(Screen screen) {
-        if (navigationService != null) {
-            navigationService.navigateTo(screen);
-        }
-    }
-
     private Node createCell(ClassSchedule schedule, Timeslot ts, Classroom cr) {
         for (ScheduledCourse sc : schedule.assignedCourses()) {
             if (sc.timeslot().equals(ts) && sc.classroom().equals(cr)) {
@@ -180,7 +291,7 @@ public class TimetableView implements ViewProvider {
                 teacher.getStyleClass().add("timetable-teacher");
                 String groups = sc.course().studentGroups().stream()
                         .map(g -> g.value())
-                        .reduce((a,b) -> a + ", " + b)
+                        .reduce((a, b) -> a + ", " + b)
                         .orElse("");
                 if (!groups.isEmpty()) {
                     Label grp = new Label(groups);
@@ -196,5 +307,162 @@ public class TimetableView implements ViewProvider {
         Label empty = new Label("");
         empty.getStyleClass().add("timetable-cell-empty");
         return empty;
+    }
+
+    private void openExportDialog(ClassSchedule schedule) {
+        ScenarioSnapshot snapshot = ScenarioSnapshot.from(scenarioViewModel);
+        TimetableExportDialog dialog = new TimetableExportDialog(snapshot);
+        Optional<TimetableExportRequest> request = dialog.showAndWait(window());
+        if (request.isEmpty()) {
+            return;
+        }
+        Path target = chooseTarget(request.get());
+        if (target == null) {
+            return;
+        }
+        startExport(snapshot, schedule, request.get(), target);
+    }
+
+    private Path chooseTarget(TimetableExportRequest request) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export timetable");
+        chooser.setInitialFileName(ExportFileNames.suggest(request, Instant.now(), ZoneId.systemDefault()));
+        chooser.getExtensionFilters().add(extensionFilter(request));
+        String lastDirectory = preferences.get(LAST_DIRECTORY_KEY, null);
+        if (lastDirectory != null) {
+            File directory = new File(lastDirectory);
+            if (directory.isDirectory()) {
+                chooser.setInitialDirectory(directory);
+            }
+        }
+        File file = chooser.showSaveDialog(window());
+        if (file == null) {
+            return null;
+        }
+        if (file.getParentFile() != null) {
+            preferences.put(LAST_DIRECTORY_KEY, file.getParentFile().getAbsolutePath());
+        }
+        Path target = ExportFileNames.ensureExtension(file.toPath(), ExportFileNames.extension(request));
+        if (Files.exists(target) && !confirmOverwrite(target)) {
+            return null;
+        }
+        return target;
+    }
+
+    private FileChooser.ExtensionFilter extensionFilter(TimetableExportRequest request) {
+        return switch (request.format()) {
+            case PDF -> new FileChooser.ExtensionFilter("PDF files", "*.pdf");
+            case CSV -> new FileChooser.ExtensionFilter("CSV files", "*.csv");
+            case PNG -> request.isBulkPng()
+                    ? new FileChooser.ExtensionFilter("ZIP archives", "*.zip")
+                    : new FileChooser.ExtensionFilter("PNG images", "*.png");
+        };
+    }
+
+    private boolean confirmOverwrite(Path target) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Replace file?");
+        alert.setHeaderText("A file with this name already exists.");
+        alert.setContentText(target.getFileName() + " will be replaced.");
+        alert.initOwner(window());
+        return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
+    }
+
+    private void startExport(
+            ScenarioSnapshot snapshot,
+            ClassSchedule schedule,
+            TimetableExportRequest request,
+            Path target) {
+        Locale locale = Locale.getDefault(Locale.Category.FORMAT);
+        ExportTheme theme = exportThemeSupplier.get();
+        Task<ExportResult> task = exportService.exportTask(snapshot, schedule, request, target, locale,
+                theme == null ? ExportTheme.LIGHT : theme);
+        activeTask = task;
+
+        exportButton.setDisable(true);
+        statusLabel.getStyleClass().removeAll("export-status-success", "export-status-error");
+        statusLabel.setText("Preparing export...");
+        statusLabel.setVisible(true);
+        statusLabel.setManaged(true);
+        progressIndicator.setVisible(true);
+        progressIndicator.setManaged(true);
+        progressIndicator.progressProperty().bind(task.progressProperty());
+        cancelExportButton.setVisible(true);
+        cancelExportButton.setManaged(true);
+
+        task.messageProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && !newValue.isBlank()) {
+                statusLabel.setText(newValue);
+            }
+        });
+        task.setOnSucceeded(event -> {
+            ExportResult result = task.getValue();
+            statusLabel.setText("Saved " + result.path().getFileName());
+            statusLabel.getStyleClass().add("export-status-success");
+            finishExport();
+        });
+        task.setOnCancelled(event -> {
+            statusLabel.setText("Export cancelled.");
+            finishExport();
+        });
+        task.setOnFailed(event -> {
+            Throwable error = task.getException();
+            String message = userMessage(error);
+            statusLabel.setText("Export failed: " + message);
+            statusLabel.getStyleClass().add("export-status-error");
+            finishExport();
+            showExportError(message);
+        });
+
+        Thread thread = new Thread(task, "timetable-export");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void finishExport() {
+        progressIndicator.progressProperty().unbind();
+        progressIndicator.setProgress(0);
+        progressIndicator.setVisible(false);
+        progressIndicator.setManaged(false);
+        cancelExportButton.setVisible(false);
+        cancelExportButton.setManaged(false);
+        exportButton.setDisable(false);
+        activeTask = null;
+    }
+
+    private String userMessage(Throwable error) {
+        if (error == null) {
+            return "Unknown error.";
+        }
+        if (error instanceof ExportException && error.getMessage() != null) {
+            return error.getMessage();
+        }
+        String message = error.getMessage();
+        if (message == null || message.isBlank()) {
+            return "The export could not be written.";
+        }
+        return message;
+    }
+
+    private void showExportError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Export failed");
+        alert.setHeaderText("The timetable could not be exported.");
+        alert.setContentText(message);
+        alert.initOwner(window());
+        alert.showAndWait();
+    }
+
+    private Window window() {
+        if (exportButton != null && exportButton.getScene() != null) {
+            return exportButton.getScene().getWindow();
+        }
+        return null;
+    }
+
+    private void navigate(Screen screen) {
+        if (navigationService != null) {
+            navigationService.navigateTo(screen);
+        }
     }
 }

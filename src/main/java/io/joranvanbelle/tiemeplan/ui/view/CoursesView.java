@@ -69,7 +69,8 @@ public class CoursesView implements ViewProvider {
         TableColumn<CourseViewModel, String> orderCol = new TableColumn<>("#");
         orderCol.setMaxWidth(50);
         orderCol.setMinWidth(50);
-        orderCol.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(table.getItems().indexOf(c.getValue()) + 1)));
+        orderCol.setCellValueFactory(
+                c -> new SimpleStringProperty(String.valueOf(table.getItems().indexOf(c.getValue()) + 1)));
 
         TableColumn<CourseViewModel, String> teacherCol = new TableColumn<>("Teacher");
         teacherCol.setCellValueFactory(c -> c.getValue().teacherProperty());
@@ -82,7 +83,8 @@ public class CoursesView implements ViewProvider {
                 () -> {
                     StringBuilder sb = new StringBuilder();
                     for (StudentGroupViewModel g : c.getValue().studentGroups()) {
-                        if (sb.length() > 0) sb.append(", ");
+                        if (sb.length() > 0)
+                            sb.append(", ");
                         sb.append(g.getName());
                     }
                     return sb.toString();
@@ -247,7 +249,8 @@ public class CoursesView implements ViewProvider {
         ListView<StudentGroupViewModel> groupsList = new ListView<>(scenarioViewModel.studentGroups());
         groupsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         groupsList.setCellFactory(CheckBoxListCell.forListView(param -> {
-            SimpleBooleanProperty prop = new SimpleBooleanProperty(groupsList.getSelectionModel().getSelectedItems().contains(param));
+            SimpleBooleanProperty prop = new SimpleBooleanProperty(
+                    groupsList.getSelectionModel().getSelectedItems().contains(param));
             prop.addListener((obs, oldv, newv) -> {
                 if (newv && !groupsList.getSelectionModel().getSelectedItems().contains(param)) {
                     groupsList.getSelectionModel().select(param);
@@ -259,7 +262,8 @@ public class CoursesView implements ViewProvider {
         }, new StringConverter<StudentGroupViewModel>() {
             @Override
             public String toString(StudentGroupViewModel object) {
-                if (object == null) return "";
+                if (object == null)
+                    return "";
                 return object.getName() + " (" + object.getSize() + ")";
             }
 

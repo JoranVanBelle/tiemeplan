@@ -10,7 +10,6 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -39,7 +38,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LocalTimeStringConverter;
 
 public class SetupView implements ViewProvider {
@@ -89,7 +87,8 @@ public class SetupView implements ViewProvider {
 
         VBox rightContent = new VBox(12);
         rightContent.setPadding(new Insets(0, 0, 0, 12));
-        rightContent.getChildren().addAll(createTeachersSection(), createSubjectsSection(), createStudentGroupsSection());
+        rightContent.getChildren().addAll(createTeachersSection(), createSubjectsSection(),
+                createStudentGroupsSection());
         VBox.setVgrow(rightContent, Priority.ALWAYS);
 
         ScrollPane rightScroll = new ScrollPane(rightContent);
@@ -182,7 +181,8 @@ public class SetupView implements ViewProvider {
         TableColumn<ClassroomViewModel, Integer> capCol = new TableColumn<>("Capacity");
         capCol.setCellValueFactory(c -> c.getValue().capacityProperty().asObject());
         capCol.setCellFactory(col -> new javafx.scene.control.TableCell<ClassroomViewModel, Integer>() {
-            private final Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 30));
+            private final Spinner<Integer> spinner = new Spinner<>(
+                    new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 30));
             {
                 spinner.setEditable(true);
                 spinner.setPrefWidth(80);
@@ -192,6 +192,7 @@ public class SetupView implements ViewProvider {
                     }
                 });
             }
+
             @Override
             protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
@@ -209,11 +210,13 @@ public class SetupView implements ViewProvider {
                     setText(String.valueOf(getTableRow().getItem().getCapacity()));
                 }
             }
+
             @Override
             public void startEdit() {
                 super.startEdit();
                 updateItem(getItem(), isEmpty());
             }
+
             @Override
             public void cancelEdit() {
                 super.cancelEdit();
@@ -232,7 +235,8 @@ public class SetupView implements ViewProvider {
                     if (event.getClickCount() == 1) {
                         tv.getSelectionModel().select(row.getIndex());
                     } else if (event.getClickCount() == 2 && !row.isEmpty()) {
-                        String target = event.getPickResult().getIntersectedNode() == null ? "" : event.getPickResult().getIntersectedNode().toString();
+                        String target = event.getPickResult().getIntersectedNode() == null ? ""
+                                : event.getPickResult().getIntersectedNode().toString();
                         if (target.contains("Capacity") || target.contains("Spinner")) {
                             tv.edit(row.getIndex(), capCol);
                         } else {
@@ -254,7 +258,8 @@ public class SetupView implements ViewProvider {
             }
         });
 
-        box.getChildren().addAll(new Label("Add Classroom"), form, formActions, new Label("Existing Classrooms"), table, removeBtn);
+        box.getChildren().addAll(new Label("Add Classroom"), form, formActions, new Label("Existing Classrooms"), table,
+                removeBtn);
         TitledPane pane = new TitledPane("Classrooms", box);
         pane.setCollapsible(true);
         pane.setExpanded(true);
@@ -323,12 +328,14 @@ public class SetupView implements ViewProvider {
         TableColumn<TimeslotViewModel, DayOfWeek> dayCol = new TableColumn<>("Day");
         dayCol.setCellValueFactory(c -> c.getValue().dayOfWeekProperty());
         dayCol.setCellFactory(ComboBoxTableCell.forTableColumn(DayOfWeek.values()));
-        dayCol.setOnEditCommit(e -> e.getTableView().getItems().get(e.getTablePosition().getRow()).setDayOfWeek(e.getNewValue()));
+        dayCol.setOnEditCommit(
+                e -> e.getTableView().getItems().get(e.getTablePosition().getRow()).setDayOfWeek(e.getNewValue()));
 
         TableColumn<TimeslotViewModel, LocalTime> timeCol = new TableColumn<>("Start Time");
         timeCol.setCellValueFactory(c -> c.getValue().startTimeProperty());
         timeCol.setCellFactory(TextFieldTableCell.forTableColumn(new LocalTimeStringConverter()));
-        timeCol.setOnEditCommit(e -> e.getTableView().getItems().get(e.getTablePosition().getRow()).setStartTime(e.getNewValue()));
+        timeCol.setOnEditCommit(
+                e -> e.getTableView().getItems().get(e.getTablePosition().getRow()).setStartTime(e.getNewValue()));
         timeCol.setMaxWidth(140);
 
         table.getColumns().addAll(dayCol, timeCol);
@@ -340,7 +347,8 @@ public class SetupView implements ViewProvider {
                     if (event.getClickCount() == 1) {
                         tv.getSelectionModel().select(row.getIndex());
                     } else if (event.getClickCount() == 2 && !row.isEmpty()) {
-                        String target = event.getPickResult().getIntersectedNode() == null ? "" : event.getPickResult().getIntersectedNode().toString();
+                        String target = event.getPickResult().getIntersectedNode() == null ? ""
+                                : event.getPickResult().getIntersectedNode().toString();
                         if (target.contains("ComboBox")) {
                             tv.edit(row.getIndex(), dayCol);
                         } else {
@@ -362,7 +370,8 @@ public class SetupView implements ViewProvider {
             }
         });
 
-        box.getChildren().addAll(new Label("Add Timeslot"), form, formActions, new Label("Existing Timeslots"), table, removeBtn);
+        box.getChildren().addAll(new Label("Add Timeslot"), form, formActions, new Label("Existing Timeslots"), table,
+                removeBtn);
         TitledPane pane = new TitledPane("Timeslots", box);
         pane.setCollapsible(true);
         pane.setExpanded(true);
@@ -602,7 +611,8 @@ public class SetupView implements ViewProvider {
         TableColumn<StudentGroupViewModel, Integer> sizeCol = new TableColumn<>("Size");
         sizeCol.setCellValueFactory(c -> c.getValue().sizeProperty().asObject());
         sizeCol.setCellFactory(col -> new javafx.scene.control.TableCell<StudentGroupViewModel, Integer>() {
-            private final Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 500, 20));
+            private final Spinner<Integer> spinner = new Spinner<>(
+                    new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 500, 20));
             {
                 spinner.setEditable(true);
                 spinner.setPrefWidth(80);
@@ -612,6 +622,7 @@ public class SetupView implements ViewProvider {
                     }
                 });
             }
+
             @Override
             protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
@@ -629,11 +640,13 @@ public class SetupView implements ViewProvider {
                     setText(String.valueOf(getTableRow().getItem().getSize()));
                 }
             }
+
             @Override
             public void startEdit() {
                 super.startEdit();
                 updateItem(getItem(), isEmpty());
             }
+
             @Override
             public void cancelEdit() {
                 super.cancelEdit();
@@ -652,7 +665,8 @@ public class SetupView implements ViewProvider {
                     if (event.getClickCount() == 1) {
                         tv.getSelectionModel().select(row.getIndex());
                     } else if (event.getClickCount() == 2 && !row.isEmpty()) {
-                        String target = event.getPickResult().getIntersectedNode() == null ? "" : event.getPickResult().getIntersectedNode().toString();
+                        String target = event.getPickResult().getIntersectedNode() == null ? ""
+                                : event.getPickResult().getIntersectedNode().toString();
                         if (target.contains("Size")) {
                             tv.edit(row.getIndex(), sizeCol);
                         } else {
@@ -674,7 +688,8 @@ public class SetupView implements ViewProvider {
             }
         });
 
-        box.getChildren().addAll(new Label("Add Student Group"), form, formActions, new Label("Existing Student Groups"), table, removeBtn);
+        box.getChildren().addAll(new Label("Add Student Group"), form, formActions,
+                new Label("Existing Student Groups"), table, removeBtn);
         TitledPane pane = new TitledPane("Student Groups", box);
         pane.setCollapsible(true);
         pane.setExpanded(true);

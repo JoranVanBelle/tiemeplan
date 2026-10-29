@@ -14,7 +14,6 @@ import io.joranvanbelle.tiemeplan.viewmodel.ValidationIssue;
 import io.joranvanbelle.tiemeplan.viewmodel.ValidationSeverity;
 
 import java.util.List;
-
 import javafx.concurrent.Worker;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -161,7 +160,8 @@ public class ConstraintsView implements ViewProvider {
         solverService.setOnFailed(e -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
-            AppState.getInstance().setLastResult(new BacktrackResult.NoSolutionFound(io.joranvanbelle.tiemeplan.backtrack.ClassSchedule.empty()));
+            AppState.getInstance().setLastResult(
+                    new BacktrackResult.NoSolutionFound(io.joranvanbelle.tiemeplan.backtrack.ClassSchedule.empty()));
             if (navigationService != null) {
                 navigationService.navigateTo(Screen.TIMETABLE);
             }
@@ -169,7 +169,8 @@ public class ConstraintsView implements ViewProvider {
         solverService.setOnCancelled(e -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
-            AppState.getInstance().setLastResult(new BacktrackResult.Cancelled(io.joranvanbelle.tiemeplan.backtrack.ClassSchedule.empty()));
+            AppState.getInstance().setLastResult(
+                    new BacktrackResult.Cancelled(io.joranvanbelle.tiemeplan.backtrack.ClassSchedule.empty()));
             if (navigationService != null) {
                 navigationService.navigateTo(Screen.TIMETABLE);
             }
@@ -237,7 +238,8 @@ public class ConstraintsView implements ViewProvider {
                 return;
             }
             boolean exists = room.occupiedTimeslots().stream()
-                    .anyMatch(ts -> ts.getDayOfWeek() == slot.getDayOfWeek() && ts.getStartTime().equals(slot.getStartTime()));
+                    .anyMatch(ts -> ts.getDayOfWeek() == slot.getDayOfWeek()
+                            && ts.getStartTime().equals(slot.getStartTime()));
             if (!exists) {
                 room.occupiedTimeslots().add(new TimeslotViewModel(slot.getDayOfWeek(), slot.getStartTime()));
             }
@@ -279,7 +281,8 @@ public class ConstraintsView implements ViewProvider {
             room.occupiedTimeslots().remove(selected);
         });
 
-        card.getChildren().addAll(title, subtitle, form, new Label("Blocked for selected classroom"), blockedList, removeBlock);
+        card.getChildren().addAll(title, subtitle, form, new Label("Blocked for selected classroom"), blockedList,
+                removeBlock);
         return card;
     }
 
@@ -301,7 +304,8 @@ public class ConstraintsView implements ViewProvider {
     }
 
     private void updateValidation() {
-        List<ValidationIssue> issues = io.joranvanbelle.tiemeplan.viewmodel.ScenarioValidator.validate(scenarioViewModel);
+        List<ValidationIssue> issues = io.joranvanbelle.tiemeplan.viewmodel.ScenarioValidator
+                .validate(scenarioViewModel);
         validationBanner.setIssues(issues);
     }
 
@@ -311,10 +315,13 @@ public class ConstraintsView implements ViewProvider {
     }
 
     private void navigateForIssue(ValidationIssue issue) {
-        if (issue == null) return;
+        if (issue == null)
+            return;
         String code = issue.code();
-        if (code == null) return;
-        if (code.startsWith("CLASSROOM") || code.startsWith("TIMESLOT") || code.startsWith("TEACHER") || code.startsWith("SUBJECT") || code.startsWith("STUDENT_GROUP")) {
+        if (code == null)
+            return;
+        if (code.startsWith("CLASSROOM") || code.startsWith("TIMESLOT") || code.startsWith("TEACHER")
+                || code.startsWith("SUBJECT") || code.startsWith("STUDENT_GROUP")) {
             navigateTo(Screen.SETUP);
         } else if (code.startsWith("COURSE")) {
             navigateTo(Screen.COURSES);
