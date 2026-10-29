@@ -1,8 +1,8 @@
 # Implementation Plan (Milestones)
 
 **Project:** Tiemeplan  
-**Last Updated:** 2026-10-27  
-**Status:** In progress — M0–M6 completed, M7 next  
+**Last Updated:** 2026-10-29  
+**Status:** In progress — M0–M6 completed, M7 next; M9 deferred  
 **Constraint:** Replace `Tiemeplan.main` to launch JavaFX app; use MVVM with JavaFX properties/bindings; add FXML support; support light/dark; cancellable solver; JSON/YAML save/load; exports PDF/CSV/PNG; jpackage + JReleaser.
 
 ## Milestone Overview
@@ -18,6 +18,7 @@
 | M6: Scenario persistence | JSON/YAML save/load, schema versioning | Roundtrip tests pass | M1,M4 | **Completed** |
 | M7: Exports | PDF/CSV/PNG export | Files generated correctly | M5 | Pending |
 | M8: Packaging & release | jpackage + JReleaser, CI workflow | Artifacts built per platform (plan only) | M0,M5,M6,M7 | Pending |
+| M9: Timetable view polish (deferred) | Toolbar filters, layout toggle, color-coded `TimetableGrid` | Filter/layout behavior tests | M5 | Deferred — analyze after M8 |
 
 ## Detailed Milestones
 
@@ -156,10 +157,13 @@
 **Tasks:**
 - `service/ExportService`: PDF via OpenPDF, CSV via OpenCSV, PNG via JavaFX snapshot + SwingFXUtils
 - Export buttons in TimetableView
+- Audience exports for master, teachers, student groups, and classrooms
 
-**Verification:** Files generated and readable; PNG matches visible grid.
+**Approved design:** combined multi-page PDF, combined CSV, and ZIP of PNGs for “All”; classroom occupancy CSV; Noto Sans; localized dates; grid + agenda page per teacher/group/classroom, each starting on a new page. See `docs/analysis/m7-exports-analysis.md`.
 
-**Dependencies:** M5
+**Verification:** Files generated and readable; content tests verify CSV rows, extracted PDF text, and PNG dimensions/theme/ZIP entries; PNG matches visible grid.
+
+**Dependencies:** M5. M9 is not required for M7.
 
 ### M8: Packaging & release
 **Tasks:**
@@ -173,12 +177,13 @@
 **Dependencies:** M0,M5,M6,M7
 
 ## Critical Path
-M0 (completed) → M1 (completed) → M2 (completed) → M3 (completed) → M4 → M5. M6/M7 after M5. M8 last.
+M0 (completed) → M1 (completed) → M2 (completed) → M3 (completed) → M4 (completed) → M5 (completed). M6/M7 after M5. M8 packaging follows M7. M9 is deferred UI polish and comes after M8.
 
 ## Unresolved Dependencies/Decisions
 See API mapping doc for storage and release details requiring approval (scenario storage location, theme persistence, solver cancelled state shape, signing/notarization).
 
 Additional open items:
+- **M9 timetable polish (deferred):** analyze and implement toolbar filters, layout toggle, color-coded `TimetableGrid`, and state preservation after M8.
 - **IDE module-path configuration (verify before M4):** use the module path in IntelliJ; classpath execution triggers the Linux GTK `_runLoop` NPE.
 - **Timeslot template generator (before/with M4):** analyze presets/configurable generation, preview/replace/append UX, and duplicate handling; timeslots remain free-form until then.
 - **JavaFX native-access warning:** consider `--enable-native-access=javafx.graphics` in run/packaging configuration.
@@ -214,3 +219,15 @@ Additional open items:
   - Added Scenario tab with import/export (JSON/YAML) and default filenames.
   - Added blocked classroom timeslots management in Constraints.
 - **Verification**: `mvn compile` passes.
+
+### M9 - Timetable View Polish (Deferred)
+- **Goal**: Add the Timetable toolbar filters, layout toggle, color-coded `TimetableGrid`, and state preservation deferred from M5.
+- **Status**: Deferred — analyze after M8.
+- **Scope**:
+  - Toolbar filters for teacher, student group, classroom, and subject.
+  - Layout toggle by room / by teacher / by group.
+  - Reusable `TimetableGrid` with color-coded cells, legend, and export-snapshot support.
+  - `TimetableViewModel` to preserve filter/layout state across navigation.
+  - Responsive/accessibility behavior at 900×650.
+- **Verification**: Filter/layout behavior tests pass; manual UI flow works.
+- **Dependencies**: M5. Scheduled after M8; does not block M7 exports.
