@@ -8,7 +8,6 @@ import tools.jackson.dataformat.yaml.YAMLMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class ScenarioPersistenceService {
     private final ObjectMapper jsonMapper = new ObjectMapper();

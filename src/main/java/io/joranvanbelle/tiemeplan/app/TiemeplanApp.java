@@ -2,6 +2,7 @@ package io.joranvanbelle.tiemeplan.app;
 
 import io.joranvanbelle.tiemeplan.service.AppState;
 import io.joranvanbelle.tiemeplan.service.ThemeService;
+import io.joranvanbelle.tiemeplan.service.export.ExportTheme;
 import io.joranvanbelle.tiemeplan.ui.navigation.NavigationService;
 import io.joranvanbelle.tiemeplan.ui.navigation.Screen;
 import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
@@ -31,7 +32,9 @@ public class TiemeplanApp extends Application {
 
         BorderPane contentPane = new BorderPane();
         contentPane.getStyleClass().add("content-pane");
-        navigationService = new NavigationService(contentPane, scenarioViewModel);
+        navigationService = new NavigationService(contentPane, scenarioViewModel,
+                AppState.getInstance()::getLastResult,
+                () -> themeService.getCurrentTheme() == ThemeService.Theme.DARK ? ExportTheme.DARK : ExportTheme.LIGHT);
 
         root.setCenter(contentPane);
 
@@ -87,7 +90,8 @@ public class TiemeplanApp extends Application {
         Button themeToggle = new Button("Toggle Theme");
         themeToggle.getStyleClass().addAll("nav-button", "theme-toggle");
 
-        toolBar.getItems().addAll(appTitle, setupBtn, coursesBtn, constraintsBtn, timetableBtn, scenarioBtn, aboutBtn, spacer, themeToggle);
+        toolBar.getItems().addAll(appTitle, setupBtn, coursesBtn, constraintsBtn, timetableBtn, scenarioBtn, aboutBtn,
+                spacer, themeToggle);
         root.setTop(toolBar);
 
         Scene scene = new Scene(root, 1200, 800);

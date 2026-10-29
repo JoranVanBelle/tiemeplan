@@ -370,3 +370,82 @@
 .timetable-scroll {
     -fx-background-color: transparent;
 }
+
+.button:focused,
+.combo-box:focused,
+.check-box:focused,
+.spinner:focused {
+    -fx-border-color: -color-focus;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.ghost-button:disabled {
+    -fx-opacity: 0.45;
+}
+
+.check-box {
+    -fx-text-fill: -color-text;
+}
+
+.check-box .box {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.check-box:selected .box {
+    -fx-background-color: -color-accent;
+    -fx-border-color: -color-accent;
+}
+
+.export-status {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 12px;
+}
+
+.export-status-success {
+    -fx-text-fill: -color-success;
+}
+
+.export-status-error {
+    -fx-text-fill: -color-error;
+}
+
+.export-note {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 12px;
+}
+
+.export-error,
+.export-dialog .export-error {
+    -fx-text-fill: -color-error;
+    -fx-font-size: 12px;
+}
+
+.progress-indicator {
+    -fx-progress-color: -color-accent;
+}
+
+.dialog-pane {
+    -fx-background-color: -color-surface;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -color-surface-2;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -color-text;
+}
+
+.export-dialog .label {
+    -fx-text-fill: -color-text;
+}
+
+.export-dialog .text-field {
+    -fx-text-fill: -color-text;
+}
