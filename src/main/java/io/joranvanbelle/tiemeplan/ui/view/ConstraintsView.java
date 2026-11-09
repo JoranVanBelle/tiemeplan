@@ -32,6 +32,8 @@ public class ConstraintsView implements ViewProvider {
     private final ValidationBanner validationBanner;
     private final SolverService solverService;
     private StackPane overlay;
+    private Button solveButton;
+    private boolean listenersRegistered;
 
     public ConstraintsView() {
         this(new ScenarioViewModel(), null);
@@ -57,6 +59,7 @@ public class ConstraintsView implements ViewProvider {
 
     @Override
     public Node getView() {
+        updateValidation();
         VBox root = new VBox(24);
         root.getStyleClass().add("screen");
         root.setPadding(new Insets(32));
@@ -75,10 +78,11 @@ public class ConstraintsView implements ViewProvider {
         VBox blockedCard = createBlockedClassroomsCard();
 
         Button solveButton = new Button("Solve");
+        this.solveButton = solveButton;
         solveButton.getStyleClass().add("primary-button");
         solveButton.setDisable(hasErrors(scenarioViewModel));
         solveButton.setOnAction(e -> startSolve(solveButton));
-        addListeners(solveButton);
+        addListeners();
 
         HBox actions = new HBox(12);
         actions.setAlignment(Pos.CENTER_LEFT);
@@ -120,9 +124,7 @@ public class ConstraintsView implements ViewProvider {
         lbl.getStyleClass().add("card-title");
         Button cancel = new Button("Cancel");
         cancel.getStyleClass().add("ghost-button");
-        cancel.setOnAction(e -> {
-            solverService.requestCancel();
-        });
+        cancel.setOnAction(_ -> solverService.requestCancel());
         box.getChildren().addAll(pi, lbl, cancel);
         overlayPane.getChildren().add(box);
         return overlayPane;
@@ -146,9 +148,9 @@ public class ConstraintsView implements ViewProvider {
         }
         overlay.setVisible(true);
         solveButton.setDisable(true);
-        solverService.setOnRunning(workerStateEvent -> {
+        solverService.setOnRunning(_ -> {
         });
-        solverService.setOnSucceeded(e -> {
+        solverService.setOnSucceeded(_ -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
             BacktrackResult result = solverService.getValue();
@@ -157,7 +159,7 @@ public class ConstraintsView implements ViewProvider {
                 navigationService.navigateTo(Screen.TIMETABLE);
             }
         });
-        solverService.setOnFailed(e -> {
+        solverService.setOnFailed(_ -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
             AppState.getInstance().setLastResult(
@@ -166,7 +168,7 @@ public class ConstraintsView implements ViewProvider {
                 navigationService.navigateTo(Screen.TIMETABLE);
             }
         });
-        solverService.setOnCancelled(e -> {
+        solverService.setOnCancelled(_ -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
             AppState.getInstance().setLastResult(
@@ -201,7 +203,7 @@ public class ConstraintsView implements ViewProvider {
         roomCombo.setItems(scenarioViewModel.classrooms());
         roomCombo.setPromptText("Select classroom");
         roomCombo.setPrefWidth(220);
-        roomCombo.setConverter(new javafx.util.StringConverter<ClassroomViewModel>() {
+        roomCombo.setConverter(new javafx.util.StringConverter<>() {
             @Override
             public String toString(ClassroomViewModel object) {
                 return object == null ? "" : object.getName();
@@ -217,7 +219,7 @@ public class ConstraintsView implements ViewProvider {
         slotCombo.setItems(scenarioViewModel.timeslots());
         slotCombo.setPromptText("Select timeslot");
         slotCombo.setPrefWidth(220);
-        slotCombo.setConverter(new javafx.util.StringConverter<TimeslotViewModel>() {
+        slotCombo.setConverter(new javafx.util.StringConverter<>() {
             @Override
             public String toString(TimeslotViewModel object) {
                 return object == null ? "" : object.getDayOfWeek() + " " + object.getStartTime();
@@ -251,7 +253,7 @@ public class ConstraintsView implements ViewProvider {
 
         javafx.scene.control.ListView<TimeslotViewModel> blockedList = new javafx.scene.control.ListView<>();
         blockedList.setPrefHeight(120);
-        blockedList.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+        blockedList.setCellFactory(_ -> new javafx.scene.control.ListCell<>() {
             @Override
             protected void updateItem(TimeslotViewModel item, boolean empty) {
                 super.updateItem(item, empty);
@@ -263,7 +265,7 @@ public class ConstraintsView implements ViewProvider {
             }
         });
 
-        roomCombo.valueProperty().addListener((obs, oldv, newv) -> {
+        roomCombo.valueProperty().addListener((_, _, newv) -> {
             blockedList.setItems(newv == null ? null : newv.occupiedTimeslots());
         });
         if (roomCombo.getValue() != null) {
@@ -286,13 +288,16 @@ public class ConstraintsView implements ViewProvider {
         return card;
     }
 
-    private void addListeners(Button solveButton) {
-        javafx.beans.InvalidationListener l = obs -> {
+    private void addListeners() {
+        if (listenersRegistered) {
+            return;
+        }
+        listenersRegistered = true;
+        javafx.beans.InvalidationListener l = _ -> {
             updateValidation();
-            if (solverService.getState() == Worker.State.RUNNING) {
-                solveButton.setDisable(true);
-            } else {
-                solveButton.setDisable(hasErrors(scenarioViewModel));
+            if (solveButton != null) {
+                solveButton.setDisable(solverService.getState() == Worker.State.RUNNING
+                        || hasErrors(scenarioViewModel));
             }
         };
         scenarioViewModel.courses().addListener(l);

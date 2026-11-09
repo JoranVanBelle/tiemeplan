@@ -46,6 +46,20 @@ class ScenarioViewModelTest {
     }
 
     @Test
+    void changingBlockedTimeslotsNotifiesClassroomListListeners() {
+        var scenario = new ScenarioViewModel();
+        var classroom = new ClassroomViewModel("room1", 30);
+        scenario.classrooms().add(classroom);
+
+        var changes = new java.util.concurrent.atomic.AtomicInteger();
+        scenario.classrooms().addListener((javafx.beans.InvalidationListener) _ -> changes.incrementAndGet());
+
+        classroom.occupiedTimeslots().add(new TimeslotViewModel(DayOfWeek.TUESDAY, LocalTime.of(10, 0)));
+
+        assertThat(changes.get()).isGreaterThan(0);
+    }
+
+    @Test
     void participantCountUpdatesWhenGroupSizeChanges() {
         var course = new CourseViewModel("Ms. Smith", "Math");
         var group = new StudentGroupViewModel("1A", 10);

@@ -19,7 +19,8 @@ import javafx.collections.ObservableList;
 public class ScenarioViewModel {
 
     private final ObservableList<ClassroomViewModel> classrooms = FXCollections.observableArrayList(
-            classroom -> new Observable[] { classroom.nameProperty(), classroom.capacityProperty() });
+            classroom -> new Observable[] { classroom.nameProperty(), classroom.capacityProperty(),
+                    classroom.occupiedTimeslots() });
     private final ObservableList<TimeslotViewModel> timeslots = FXCollections.observableArrayList(
             timeslot -> new Observable[] { timeslot.dayOfWeekProperty(), timeslot.startTimeProperty() });
     private final ObservableList<CourseViewModel> courses = FXCollections.observableArrayList(
