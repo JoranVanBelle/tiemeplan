@@ -96,7 +96,7 @@ Font stack: `-fx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Rob
 | `FileDropZone` | Pane | Drag-drop for load/save scenarios | Scenario Manager |
 
 ## 4. Navigation & Interaction Patterns
-- **Navigation model**: Screen-based navigation via `NavigationService`. Screens: Setup, Courses, Constraints, Solving, Timetable, NoSolution, ScenarioManager, About.
+- **Navigation model**: Screen-based navigation via `NavigationService`. Screens: Setup, Courses, Constraints, Timetable, Scenario, About.
 - **Layout**: `BorderPane` root with `ToolBar` (nav, theme toggle, save/load) and content area. `SplitPane` where lists+details make sense.
 - **State preservation**: ViewModels retain scenario state across navigation.
 - **Modal dialogs**: Only for destructive actions and critical confirmations.

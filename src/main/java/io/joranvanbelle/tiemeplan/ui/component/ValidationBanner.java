@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.AccessibleRole;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -67,7 +69,16 @@ public class ValidationBanner extends VBox {
         message.setWrapText(true);
         row.getChildren().addAll(code, message);
         if (onIssueClick != null) {
+            row.setFocusTraversable(true);
+            row.setAccessibleRole(AccessibleRole.BUTTON);
+            row.setAccessibleText(issue.code() + ": " + issue.message());
             row.setOnMouseClicked(e -> onIssueClick.accept(issue));
+            row.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ENTER || e.getCode() == KeyCode.SPACE) {
+                    onIssueClick.accept(issue);
+                    e.consume();
+                }
+            });
             row.setCursor(javafx.scene.Cursor.HAND);
         }
         return row;

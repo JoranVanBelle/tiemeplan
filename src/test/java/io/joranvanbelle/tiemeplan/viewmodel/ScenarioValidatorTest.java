@@ -23,6 +23,16 @@ class ScenarioValidatorTest {
     }
 
     @Test
+    void issuesIdentifyTheirNavigationArea() {
+        var issues = ScenarioValidator.validate(new ScenarioViewModel());
+
+        assertThat(issues).anyMatch(issue -> issue.code().equals("scenario.no-classrooms")
+                && issue.area() == ValidationArea.SETUP);
+        assertThat(issues).anyMatch(issue -> issue.code().equals("scenario.no-courses")
+                && issue.area() == ValidationArea.COURSES);
+    }
+
+    @Test
     void detectsDuplicateNamesIgnoringCaseAndWhitespace() {
         var scenario = validScenario();
         scenario.teachers().addAll(List.of(" ms. smith "));

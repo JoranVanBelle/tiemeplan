@@ -12,6 +12,14 @@
 
   <description>Create time plans for schools using constraints</description>
 
+  <licenses>
+    <license>
+      <name>Apache License 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <developers>
     <developer>
       <name>Joran Van Belle</name>
@@ -161,6 +169,9 @@
         <groupId>org.panteleyev</groupId>
         <artifactId>jpackage-maven-plugin</artifactId>
         <version>${jpackage.maven.plugin.version}</version>
+        <configuration>
+          <licenseFile>${project.basedir}/LICENSE</licenseFile>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jreleaser</groupId>

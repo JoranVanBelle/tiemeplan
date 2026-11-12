@@ -5,13 +5,20 @@ import io.joranvanbelle.tiemeplan.viewmodel.CourseViewModel;
 import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
 import io.joranvanbelle.tiemeplan.viewmodel.StudentGroupViewModel;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -21,6 +28,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -40,11 +48,6 @@ public class CoursesView implements ViewProvider {
 
     public CoursesView(ScenarioViewModel scenarioViewModel) {
         this.scenarioViewModel = scenarioViewModel;
-    }
-
-    @Override
-    public String getTitle() {
-        return "Courses";
     }
 
     @Override
@@ -105,18 +108,20 @@ public class CoursesView implements ViewProvider {
             {
                 upBtn.getStyleClass().add("ghost-button");
                 downBtn.getStyleClass().add("ghost-button");
+                upBtn.setAccessibleText("Move course up");
+                downBtn.setAccessibleText("Move course down");
+                upBtn.setTooltip(new Tooltip("Move course up"));
+                downBtn.setTooltip(new Tooltip("Move course down"));
                 upBtn.setOnAction(e -> {
                     int idx = getIndex();
                     if (idx > 0) {
-                        scenarioViewModel.moveCourse(idx, idx - 1);
-                        table.getSelectionModel().select(idx - 1);
+                        moveCourse(table, idx, idx - 1);
                     }
                 });
                 downBtn.setOnAction(e -> {
                     int idx = getIndex();
                     if (idx >= 0 && idx < scenarioViewModel.courses().size() - 1) {
-                        scenarioViewModel.moveCourse(idx, idx + 1);
-                        table.getSelectionModel().select(idx + 1);
+                        moveCourse(table, idx, idx + 1);
                     }
                 });
                 box.setAlignment(Pos.CENTER);
@@ -172,8 +177,7 @@ public class CoursesView implements ViewProvider {
                             dropIdx = scenarioViewModel.courses().size() - 1;
                         }
                         if (draggedIdx != dropIdx) {
-                            scenarioViewModel.moveCourse(draggedIdx, dropIdx);
-                            table.getSelectionModel().select(dropIdx);
+                            moveCourse(table, draggedIdx, dropIdx);
                         }
                         success = true;
                     }
@@ -211,8 +215,7 @@ public class CoursesView implements ViewProvider {
         moveUp.setOnAction(e -> {
             int idx = table.getSelectionModel().getSelectedIndex();
             if (idx > 0) {
-                scenarioViewModel.moveCourse(idx, idx - 1);
-                table.getSelectionModel().select(idx - 1);
+                moveCourse(table, idx, idx - 1);
             }
         });
         Button moveDown = new Button("Move Down");
@@ -220,8 +223,7 @@ public class CoursesView implements ViewProvider {
         moveDown.setOnAction(e -> {
             int idx = table.getSelectionModel().getSelectedIndex();
             if (idx >= 0 && idx < scenarioViewModel.courses().size() - 1) {
-                scenarioViewModel.moveCourse(idx, idx + 1);
-                table.getSelectionModel().select(idx + 1);
+                moveCourse(table, idx, idx + 1);
             }
         });
         actions.getChildren().addAll(addBtn, moveUp, moveDown, removeBtn);
@@ -231,11 +233,16 @@ public class CoursesView implements ViewProvider {
         return root;
     }
 
+    private void moveCourse(TableView<CourseViewModel> table, int from, int to) {
+        scenarioViewModel.moveCourse(from, to);
+        table.refresh();
+        table.getSelectionModel().select(to);
+    }
+
     private void showAddDialog() {
         Dialog<CourseViewModel> dialog = new Dialog<>();
         dialog.setTitle("Add Course");
-        dialog.getDialogPane().getButtonTypes().addAll(javafx.scene.control.ButtonType.OK,
-                javafx.scene.control.ButtonType.CANCEL);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
         VBox content = new VBox(12);
         content.setPadding(new Insets(16));
@@ -245,59 +252,55 @@ public class CoursesView implements ViewProvider {
         ComboBox<String> subjectCombo = new ComboBox<>(scenarioViewModel.subjects());
         subjectCombo.setPromptText("Select subject");
 
+        Map<StudentGroupViewModel, BooleanProperty> selections = new HashMap<>();
+        for (StudentGroupViewModel group : scenarioViewModel.studentGroups()) {
+            selections.put(group, new SimpleBooleanProperty(false));
+        }
+
         Label groupsLabel = new Label("Student Groups");
         ListView<StudentGroupViewModel> groupsList = new ListView<>(scenarioViewModel.studentGroups());
-        groupsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        groupsList.setCellFactory(CheckBoxListCell.forListView(param -> {
-            SimpleBooleanProperty prop = new SimpleBooleanProperty(
-                    groupsList.getSelectionModel().getSelectedItems().contains(param));
-            prop.addListener((obs, oldv, newv) -> {
-                if (newv && !groupsList.getSelectionModel().getSelectedItems().contains(param)) {
-                    groupsList.getSelectionModel().select(param);
-                } else if (!newv && groupsList.getSelectionModel().getSelectedItems().contains(param)) {
-                    groupsList.getSelectionModel().clearSelection(groupsList.getItems().indexOf(param));
-                }
-            });
-            return prop;
-        }, new StringConverter<StudentGroupViewModel>() {
-            @Override
-            public String toString(StudentGroupViewModel object) {
-                if (object == null)
-                    return "";
-                return object.getName() + " (" + object.getSize() + ")";
-            }
+        groupsList.setCellFactory(CheckBoxListCell.forListView(group -> selections.get(group),
+                new StringConverter<StudentGroupViewModel>() {
+                    @Override
+                    public String toString(StudentGroupViewModel object) {
+                        if (object == null)
+                            return "";
+                        return object.getName() + " (" + object.getSize() + ")";
+                    }
 
-            @Override
-            public StudentGroupViewModel fromString(String string) {
-                return null;
-            }
-        }));
+                    @Override
+                    public StudentGroupViewModel fromString(String string) {
+                        return null;
+                    }
+                }));
 
         content.getChildren().addAll(new Label("Teacher"), teacherCombo, new Label("Subject"), subjectCombo,
                 groupsLabel, groupsList);
         dialog.getDialogPane().setContent(content);
 
+        Node okButton = dialog.getDialogPane().lookupButton(ButtonType.OK);
+        List<Observable> dependencies = new ArrayList<>();
+        dependencies.add(teacherCombo.valueProperty());
+        dependencies.add(subjectCombo.valueProperty());
+        dependencies.addAll(selections.values());
+        okButton.disableProperty().bind(Bindings.createBooleanBinding(
+                () -> teacherCombo.getValue() == null || subjectCombo.getValue() == null
+                        || selections.values().stream().noneMatch(BooleanProperty::get),
+                dependencies.toArray(Observable[]::new)));
+
         dialog.setResultConverter(btn -> {
-            if (btn == javafx.scene.control.ButtonType.OK) {
-                CourseViewModel course = new CourseViewModel(
-                        teacherCombo.getValue() == null ? "" : teacherCombo.getValue(),
-                        subjectCombo.getValue() == null ? "" : subjectCombo.getValue());
-                for (StudentGroupViewModel group : groupsList.getSelectionModel().getSelectedItems()) {
-                    if (!course.studentGroups().contains(group)) {
-                        course.studentGroups().add(group);
-                    }
-                }
-                return course;
+            if (btn != ButtonType.OK) {
+                return null;
             }
-            return null;
+            CourseViewModel course = new CourseViewModel(teacherCombo.getValue(), subjectCombo.getValue());
+            selections.forEach((group, selected) -> {
+                if (selected.get() && !course.studentGroups().contains(group)) {
+                    course.studentGroups().add(group);
+                }
+            });
+            return course;
         });
 
-        var result = dialog.showAndWait();
-        result.ifPresent(course -> {
-            if (!course.getTeacher().isBlank() && !course.getSubject().isBlank()
-                    && !course.studentGroups().isEmpty()) {
-                scenarioViewModel.courses().add(course);
-            }
-        });
+        dialog.showAndWait().ifPresent(course -> scenarioViewModel.courses().add(course));
     }
 }

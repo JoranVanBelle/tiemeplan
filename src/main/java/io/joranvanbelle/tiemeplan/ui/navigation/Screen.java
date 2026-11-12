@@ -4,10 +4,9 @@ public enum Screen {
     SETUP("Setup"),
     COURSES("Courses"),
     CONSTRAINTS("Constraints"),
-    SOLVING("Solving"),
     TIMETABLE("Timetable"),
-    ABOUT("About"),
-    SCENARIO("Scenario");
+    SCENARIO("Scenario"),
+    ABOUT("About");
 
     private final String title;
 
