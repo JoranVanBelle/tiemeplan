@@ -99,11 +99,15 @@
 **Error States:** Parse errors, version mismatch, IO errors
 
 ### 8. About / Help
-**Purpose:** App info and theme.  
-**Layout:** Simple VBox.  
+**Purpose:** App info, version, runtime details, and license.  
+**Layout:** Simple VBox, content integrated directly into the page (no nested card pane): identity header (logo, app name as screen title, version pill, description as subtitle), then full-width sections separated by horizontal separators: System, License, copyright + actions. Theme switching lives in the toolbar only.  
+**Version:** Neutral pill (`v {project.version}`) next to the app name in the page header, sourced from filtered `app.properties`; updates automatically with each release.  
+**System:** Java, JavaFX, Platform (os.name + os.arch) rows.  
+**License:** Apache License 2.0 (link to license text).  
+**Actions:** Report an Issue (GitHub, via HostServices), Copy Diagnostics (version/Java/JavaFX/OS to clipboard).  
 **User Actions:**
-- Toggle theme
-- View version/Java/JavaFX
+- Open license URL, report an issue
+- Copy diagnostics to clipboard
 
 **Loading States:** None  
 **Empty States:** N/A  

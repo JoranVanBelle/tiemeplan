@@ -1,36 +1,45 @@
 package io.joranvanbelle.tiemeplan.ui.view;
 
 import io.joranvanbelle.tiemeplan.backtrack.BacktrackResult;
-import io.joranvanbelle.tiemeplan.service.AppState;
+import io.joranvanbelle.tiemeplan.backtrack.ClassSchedule;
 import io.joranvanbelle.tiemeplan.service.SolverService;
 import io.joranvanbelle.tiemeplan.ui.component.ValidationBanner;
+import io.joranvanbelle.tiemeplan.ui.dialog.Dialogs;
 import io.joranvanbelle.tiemeplan.ui.navigation.NavigationService;
 import io.joranvanbelle.tiemeplan.ui.navigation.Screen;
 import io.joranvanbelle.tiemeplan.ui.navigation.ViewProvider;
 import io.joranvanbelle.tiemeplan.viewmodel.ClassroomViewModel;
+import io.joranvanbelle.tiemeplan.viewmodel.ScenarioValidator;
 import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
 import io.joranvanbelle.tiemeplan.viewmodel.TimeslotViewModel;
+import io.joranvanbelle.tiemeplan.viewmodel.ValidationArea;
 import io.joranvanbelle.tiemeplan.viewmodel.ValidationIssue;
 import io.joranvanbelle.tiemeplan.viewmodel.ValidationSeverity;
 
 import java.util.List;
+import java.util.function.Consumer;
 import javafx.concurrent.Worker;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 public class ConstraintsView implements ViewProvider {
     private final ScenarioViewModel scenarioViewModel;
     private final NavigationService navigationService;
-    private final ValidationBanner validationBanner;
     private final SolverService solverService;
+    private final Consumer<BacktrackResult> resultConsumer;
+    private final ValidationBanner validationBanner;
     private StackPane overlay;
     private Button solveButton;
     private boolean listenersRegistered;
@@ -44,17 +53,22 @@ public class ConstraintsView implements ViewProvider {
     }
 
     public ConstraintsView(ScenarioViewModel scenarioViewModel, NavigationService navigationService) {
+        this(scenarioViewModel, navigationService, new SolverService(), result -> {
+        });
+    }
+
+    public ConstraintsView(
+            ScenarioViewModel scenarioViewModel,
+            NavigationService navigationService,
+            SolverService solverService,
+            Consumer<BacktrackResult> resultConsumer) {
         this.scenarioViewModel = scenarioViewModel;
         this.navigationService = navigationService;
-        this.solverService = AppState.getInstance().getSolverService();
+        this.solverService = solverService;
+        this.resultConsumer = resultConsumer;
         this.validationBanner = new ValidationBanner();
         updateValidation();
         this.validationBanner.setOnIssueClick(this::navigateForIssue);
-    }
-
-    @Override
-    public String getTitle() {
-        return "Constraints";
     }
 
     @Override
@@ -114,7 +128,7 @@ public class ConstraintsView implements ViewProvider {
 
     private StackPane createOverlay() {
         StackPane overlayPane = new StackPane();
-        overlayPane.setStyle("-fx-background-color: rgba(0,0,0,0.4);");
+        overlayPane.getStyleClass().add("solve-overlay");
         VBox box = new VBox(12);
         box.setAlignment(Pos.CENTER);
         box.getStyleClass().add("card");
@@ -143,18 +157,17 @@ public class ConstraintsView implements ViewProvider {
             solverService.setCourses(scenarioViewModel.toDomainCourses());
             solverService.setClassrooms(scenarioViewModel.toDomainClassrooms());
             solverService.setTimeslots(scenarioViewModel.toDomainTimeslots());
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
+            Dialogs.error("Cannot start solving", Dialogs.messageOf(ex));
             return;
         }
         overlay.setVisible(true);
         solveButton.setDisable(true);
-        solverService.setOnRunning(_ -> {
-        });
         solverService.setOnSucceeded(_ -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
             BacktrackResult result = solverService.getValue();
-            AppState.getInstance().setLastResult(result);
+            resultConsumer.accept(result);
             if (navigationService != null) {
                 navigationService.navigateTo(Screen.TIMETABLE);
             }
@@ -162,17 +175,12 @@ public class ConstraintsView implements ViewProvider {
         solverService.setOnFailed(_ -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
-            AppState.getInstance().setLastResult(
-                    new BacktrackResult.NoSolutionFound(io.joranvanbelle.tiemeplan.backtrack.ClassSchedule.empty()));
-            if (navigationService != null) {
-                navigationService.navigateTo(Screen.TIMETABLE);
-            }
+            Dialogs.error("Solving failed", Dialogs.messageOf(solverService.getException()));
         });
         solverService.setOnCancelled(_ -> {
             overlay.setVisible(false);
             solveButton.setDisable(hasErrors(scenarioViewModel));
-            AppState.getInstance().setLastResult(
-                    new BacktrackResult.Cancelled(io.joranvanbelle.tiemeplan.backtrack.ClassSchedule.empty()));
+            resultConsumer.accept(new BacktrackResult.Cancelled(ClassSchedule.empty()));
             if (navigationService != null) {
                 navigationService.navigateTo(Screen.TIMETABLE);
             }
@@ -199,11 +207,11 @@ public class ConstraintsView implements ViewProvider {
         Label subtitle = new Label("Mark specific timeslots as unavailable for a classroom.");
         subtitle.getStyleClass().add("card-subtitle");
 
-        javafx.scene.control.ComboBox<ClassroomViewModel> roomCombo = new javafx.scene.control.ComboBox<>();
+        ComboBox<ClassroomViewModel> roomCombo = new ComboBox<>();
         roomCombo.setItems(scenarioViewModel.classrooms());
         roomCombo.setPromptText("Select classroom");
         roomCombo.setPrefWidth(220);
-        roomCombo.setConverter(new javafx.util.StringConverter<>() {
+        roomCombo.setConverter(new StringConverter<>() {
             @Override
             public String toString(ClassroomViewModel object) {
                 return object == null ? "" : object.getName();
@@ -215,11 +223,11 @@ public class ConstraintsView implements ViewProvider {
             }
         });
 
-        javafx.scene.control.ComboBox<TimeslotViewModel> slotCombo = new javafx.scene.control.ComboBox<>();
+        ComboBox<TimeslotViewModel> slotCombo = new ComboBox<>();
         slotCombo.setItems(scenarioViewModel.timeslots());
         slotCombo.setPromptText("Select timeslot");
         slotCombo.setPrefWidth(220);
-        slotCombo.setConverter(new javafx.util.StringConverter<>() {
+        slotCombo.setConverter(new StringConverter<>() {
             @Override
             public String toString(TimeslotViewModel object) {
                 return object == null ? "" : object.getDayOfWeek() + " " + object.getStartTime();
@@ -231,7 +239,7 @@ public class ConstraintsView implements ViewProvider {
             }
         });
 
-        javafx.scene.control.Button addBlock = new javafx.scene.control.Button("Block Timeslot");
+        Button addBlock = new Button("Block Timeslot");
         addBlock.getStyleClass().add("secondary-button");
         addBlock.setOnAction(e -> {
             ClassroomViewModel room = roomCombo.getValue();
@@ -251,9 +259,9 @@ public class ConstraintsView implements ViewProvider {
         form.setAlignment(Pos.CENTER_LEFT);
         form.getChildren().addAll(roomCombo, slotCombo, addBlock);
 
-        javafx.scene.control.ListView<TimeslotViewModel> blockedList = new javafx.scene.control.ListView<>();
+        ListView<TimeslotViewModel> blockedList = new ListView<>();
         blockedList.setPrefHeight(120);
-        blockedList.setCellFactory(_ -> new javafx.scene.control.ListCell<>() {
+        blockedList.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(TimeslotViewModel item, boolean empty) {
                 super.updateItem(item, empty);
@@ -272,7 +280,7 @@ public class ConstraintsView implements ViewProvider {
             blockedList.setItems(roomCombo.getValue().occupiedTimeslots());
         }
 
-        javafx.scene.control.Button removeBlock = new javafx.scene.control.Button("Remove Selected");
+        Button removeBlock = new Button("Remove Selected");
         removeBlock.getStyleClass().add("ghost-button");
         removeBlock.setOnAction(e -> {
             ClassroomViewModel room = roomCombo.getValue();
@@ -309,28 +317,20 @@ public class ConstraintsView implements ViewProvider {
     }
 
     private void updateValidation() {
-        List<ValidationIssue> issues = io.joranvanbelle.tiemeplan.viewmodel.ScenarioValidator
-                .validate(scenarioViewModel);
+        List<ValidationIssue> issues = ScenarioValidator.validate(scenarioViewModel);
         validationBanner.setIssues(issues);
     }
 
     private boolean hasErrors(ScenarioViewModel vm) {
-        return io.joranvanbelle.tiemeplan.viewmodel.ScenarioValidator.validate(vm).stream()
+        return ScenarioValidator.validate(vm).stream()
                 .anyMatch(i -> i.severity() == ValidationSeverity.ERROR);
     }
 
     private void navigateForIssue(ValidationIssue issue) {
-        if (issue == null)
+        if (issue == null || issue.area() == null) {
             return;
-        String code = issue.code();
-        if (code == null)
-            return;
-        if (code.startsWith("CLASSROOM") || code.startsWith("TIMESLOT") || code.startsWith("TEACHER")
-                || code.startsWith("SUBJECT") || code.startsWith("STUDENT_GROUP")) {
-            navigateTo(Screen.SETUP);
-        } else if (code.startsWith("COURSE")) {
-            navigateTo(Screen.COURSES);
         }
+        navigateTo(issue.area() == ValidationArea.COURSES ? Screen.COURSES : Screen.SETUP);
     }
 
     private void navigateTo(Screen screen) {

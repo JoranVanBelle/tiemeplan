@@ -14,31 +14,45 @@ public class ScenarioPersistenceService {
     private final ObjectMapper yamlMapper = new YAMLMapper();
 
     public void saveJson(ScenarioViewModel viewModel, File file) throws IOException {
-        ScenarioDto dto = viewModel.toDto();
+        saveJson(viewModel.toDto(), file);
+    }
+
+    public void saveJson(ScenarioDto dto, File file) throws IOException {
         ensureSchema(dto);
         String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dto);
         Files.writeString(file.toPath(), json);
     }
 
     public void saveYaml(ScenarioViewModel viewModel, File file) throws IOException {
-        ScenarioDto dto = viewModel.toDto();
+        saveYaml(viewModel.toDto(), file);
+    }
+
+    public void saveYaml(ScenarioDto dto, File file) throws IOException {
         ensureSchema(dto);
         String yaml = yamlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dto);
         Files.writeString(file.toPath(), yaml);
     }
 
     public void loadJson(ScenarioViewModel viewModel, File file) throws IOException {
+        viewModel.loadFrom(readJson(file));
+    }
+
+    public ScenarioDto readJson(File file) throws IOException {
         String json = Files.readString(file.toPath());
         ScenarioDto dto = jsonMapper.readValue(json, ScenarioDto.class);
         validateSchema(dto);
-        viewModel.loadFrom(dto);
+        return dto;
     }
 
     public void loadYaml(ScenarioViewModel viewModel, File file) throws IOException {
+        viewModel.loadFrom(readYaml(file));
+    }
+
+    public ScenarioDto readYaml(File file) throws IOException {
         String yaml = Files.readString(file.toPath());
         ScenarioDto dto = yamlMapper.readValue(yaml, ScenarioDto.class);
         validateSchema(dto);
-        viewModel.loadFrom(dto);
+        return dto;
     }
 
     private void ensureSchema(ScenarioDto dto) {

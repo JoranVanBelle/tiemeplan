@@ -10,6 +10,7 @@ import io.joranvanbelle.tiemeplan.service.export.ExportService;
 import io.joranvanbelle.tiemeplan.service.export.ExportTheme;
 import io.joranvanbelle.tiemeplan.service.export.ScenarioSnapshot;
 import io.joranvanbelle.tiemeplan.service.export.TimetableExportRequest;
+import io.joranvanbelle.tiemeplan.ui.dialog.Dialogs;
 import io.joranvanbelle.tiemeplan.ui.dialog.TimetableExportDialog;
 import io.joranvanbelle.tiemeplan.ui.navigation.NavigationService;
 import io.joranvanbelle.tiemeplan.ui.navigation.Screen;
@@ -33,9 +34,7 @@ import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
@@ -87,12 +86,8 @@ public class TimetableView implements ViewProvider {
     }
 
     @Override
-    public String getTitle() {
-        return "Timetable";
-    }
-
-    @Override
     public Node getView() {
+        abortExport();
         VBox root = new VBox(16);
         root.getStyleClass().add("screen");
         root.setPadding(new Insets(24));
@@ -174,50 +169,37 @@ public class TimetableView implements ViewProvider {
     }
 
     private VBox noSolutionCard() {
-        VBox card = new VBox(12);
-        card.getStyleClass().add("card");
-        Label title = new Label("No solution found");
-        title.getStyleClass().add("card-title");
-        Label msg = new Label(
-                "The solver could not find a valid timetable for the current setup. Check constraints and available timeslots/classrooms.");
-        msg.getStyleClass().add("card-subtitle");
-        msg.setWrapText(true);
-        HBox actions = new HBox(10);
-        Button setup = new Button("Go to Setup");
-        setup.getStyleClass().add("secondary-button");
-        setup.setOnAction(e -> navigate(Screen.SETUP));
-        Button courses = new Button("Go to Courses");
-        courses.getStyleClass().add("secondary-button");
-        courses.setOnAction(e -> navigate(Screen.COURSES));
-        Button constraints = new Button("Go to Constraints");
-        constraints.getStyleClass().add("primary-button");
-        constraints.setOnAction(e -> navigate(Screen.CONSTRAINTS));
-        actions.getChildren().addAll(setup, courses, constraints);
-        card.getChildren().addAll(title, msg, actions);
-        return card;
+        return card("No solution found",
+                "The solver could not find a valid timetable for the current setup. Check constraints and available timeslots/classrooms.",
+                true);
     }
 
     private VBox cancelledCard() {
-        VBox card = new VBox(12);
-        card.getStyleClass().add("card");
-        Label title = new Label("Solving cancelled");
-        title.getStyleClass().add("card-title");
-        Label msg = new Label("The solving process was cancelled.");
-        msg.getStyleClass().add("card-subtitle");
-        msg.setWrapText(true);
-        card.getChildren().addAll(title, msg);
-        return card;
+        return card("Solving cancelled", "The solving process was cancelled.", false);
     }
 
     private VBox noTimetableCard() {
+        return card("No timetable yet",
+                "Configure your scenario in Setup and Courses, then run Solve from the Constraints screen.",
+                true);
+    }
+
+    private VBox card(String title, String message, boolean withNavigationActions) {
         VBox card = new VBox(12);
         card.getStyleClass().add("card");
-        Label title = new Label("No timetable yet");
-        title.getStyleClass().add("card-title");
-        Label msg = new Label(
-                "Configure your scenario in Setup and Courses, then run Solve from the Constraints screen.");
-        msg.getStyleClass().add("card-subtitle");
-        msg.setWrapText(true);
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("card-title");
+        Label messageLabel = new Label(message);
+        messageLabel.getStyleClass().add("card-subtitle");
+        messageLabel.setWrapText(true);
+        card.getChildren().addAll(titleLabel, messageLabel);
+        if (withNavigationActions) {
+            card.getChildren().add(navigationActions());
+        }
+        return card;
+    }
+
+    private HBox navigationActions() {
         HBox actions = new HBox(10);
         Button setup = new Button("Go to Setup");
         setup.getStyleClass().add("secondary-button");
@@ -229,8 +211,7 @@ public class TimetableView implements ViewProvider {
         constraints.getStyleClass().add("primary-button");
         constraints.setOnAction(e -> navigate(Screen.CONSTRAINTS));
         actions.getChildren().addAll(setup, courses, constraints);
-        card.getChildren().addAll(title, msg, actions);
-        return card;
+        return actions;
     }
 
     private Node createGrid(ClassSchedule schedule) {
@@ -360,12 +341,8 @@ public class TimetableView implements ViewProvider {
     }
 
     private boolean confirmOverwrite(Path target) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Replace file?");
-        alert.setHeaderText("A file with this name already exists.");
-        alert.setContentText(target.getFileName() + " will be replaced.");
-        alert.initOwner(window());
-        return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
+        return Dialogs.confirm(window(), "Replace file?", "A file with this name already exists.",
+                target.getFileName() + " will be replaced.");
     }
 
     private void startExport(
@@ -445,12 +422,22 @@ public class TimetableView implements ViewProvider {
     }
 
     private void showExportError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Export failed");
-        alert.setHeaderText("The timetable could not be exported.");
-        alert.setContentText(message);
-        alert.initOwner(window());
-        alert.showAndWait();
+        Dialogs.error(window(), "Export failed", message);
+    }
+
+    private void abortExport() {
+        if (activeTask == null) {
+            return;
+        }
+        Task<ExportResult> task = activeTask;
+        activeTask = null;
+        task.setOnSucceeded(null);
+        task.setOnCancelled(null);
+        task.setOnFailed(null);
+        task.cancel();
+        if (progressIndicator != null && progressIndicator.progressProperty().isBound()) {
+            progressIndicator.progressProperty().unbind();
+        }
     }
 
     private Window window() {
