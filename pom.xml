@@ -4,7 +4,7 @@
 
   <groupId>io.joranvanbelle.tiemeplan</groupId>
   <artifactId>tiemeplan</artifactId>
-  <version>0.1.0</version>
+  <version>0.0.0</version>
   <packaging>jar</packaging>
 
   <name>tiemeplan</name>
@@ -42,11 +42,25 @@
 
     <!-- Plugins -->
     <spotless.version>3.10.4</spotless.version>
-    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
     <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
     <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-    <jpackage.maven.plugin.version>1.6.6</jpackage.maven.plugin.version>
-    <jreleaser.maven.plugin.version>1.13.1</jreleaser.maven.plugin.version>
+    <jpackage.maven.plugin.version>1.8.0</jpackage.maven.plugin.version>
+    <jreleaser.maven.plugin.version>1.27.0</jreleaser.maven.plugin.version>
+    <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
+    <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
+    <versions-maven-plugin.version>2.25.2</versions-maven-plugin.version>
+
+    <!-- Packaging -->
+    <app.main.module>io.joranvanbelle.tiemeplan</app.main.module>
+    <app.main.class>io.joranvanbelle.tiemeplan.Tiemeplan</app.main.class>
+    <app.image.directory>${project.build.directory}/app-image</app.image.directory>
+    <!-- An application image is a self-contained directory with a launcher and a Java runtime.
+         It can only be built for the operating system the build runs on. -->
+    <jpackage.type>APP_IMAGE</jpackage.type>
+    <!-- Placeholder icons: replace the files in src/main/packaging with the real artwork. -->
+    <jpackage.icon>${project.basedir}/src/main/packaging/icon.png</jpackage.icon>
+    <jpackage.app.version>${project.version}</jpackage.app.version>
   </properties>
 
   <dependencies>
@@ -166,17 +180,12 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.panteleyev</groupId>
-        <artifactId>jpackage-maven-plugin</artifactId>
-        <version>${jpackage.maven.plugin.version}</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>${versions-maven-plugin.version}</version>
         <configuration>
-          <licenseFile>${project.basedir}/LICENSE</licenseFile>
+          <generateBackupPoms>false</generateBackupPoms>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.jreleaser</groupId>
-        <artifactId>jreleaser-maven-plugin</artifactId>
-        <version>${jreleaser.maven.plugin.version}</version>
       </plugin>
 
       <!-- Formatter -->
@@ -219,4 +228,227 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!--
+      Builds a self-contained application for the current operating system:
+
+        mvn clean package -Papp-image
+
+      1. The JavaFX jars and the remaining runtime dependencies are copied to separate directories.
+      2. jlink creates a runtime image containing the JDK modules and JavaFX.
+      3. jpackage bundles that runtime with the application and its dependencies.
+
+      Most third-party dependencies are automatic modules, which jlink cannot link.
+      They are therefore placed on the module path of the packaged application instead.
+    -->
+    <profile>
+      <id>app-image</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>${maven-dependency-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>copy-javafx</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeScope>runtime</includeScope>
+                  <includeGroupIds>org.openjfx</includeGroupIds>
+                  <outputDirectory>${app.image.directory}/javafx</outputDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>copy-libraries</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeScope>runtime</includeScope>
+                  <excludeGroupIds>org.openjfx</excludeGroupIds>
+                  <outputDirectory>${app.image.directory}/mods</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>${exec-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>jlink-runtime</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>${java.home}/bin/jlink</executable>
+                  <arguments>
+                    <argument>--module-path</argument>
+                    <argument>${app.image.directory}/javafx</argument>
+                    <argument>--add-modules</argument>
+                    <!-- JavaFX modules pull in the JDK modules they need. The others are
+                         required by the application or by its automatic-module dependencies. -->
+                    <argument>javafx.controls,javafx.fxml,javafx.swing,java.desktop,java.prefs,java.sql,java.xml,java.logging,java.naming,jdk.charsets</argument>
+                    <argument>--strip-debug</argument>
+                    <argument>--no-header-files</argument>
+                    <argument>--no-man-pages</argument>
+                    <argument>--output</argument>
+                    <argument>${app.image.directory}/runtime</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-application-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${app.image.directory}/mods</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${project.build.directory}</directory>
+                      <includes>
+                        <include>${project.build.finalName}.jar</include>
+                      </includes>
+                      <filtering>false</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.panteleyev</groupId>
+            <artifactId>jpackage-maven-plugin</artifactId>
+            <version>${jpackage.maven.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>jpackage</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jpackage</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <type>${jpackage.type}</type>
+              <icon>${jpackage.icon}</icon>
+              <name>Tiemeplan</name>
+              <appVersion>${jpackage.app.version}</appVersion>
+              <vendor>Joran Van Belle</vendor>
+              <description>${project.description}</description>
+              <destination>${app.image.directory}/dist</destination>
+              <runtimeImage>${app.image.directory}/runtime</runtimeImage>
+              <modulePaths>
+                <modulePath>${app.image.directory}/mods</modulePath>
+              </modulePaths>
+              <module>${app.main.module}/${app.main.class}</module>
+              <javaOptions>
+                <javaOption>--enable-native-access=javafx.graphics</javaOption>
+              </javaOptions>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Every platform is distributed as a plain application image, archived by the release workflow.
+         Linux uses the default icon.png. -->
+    <profile>
+      <id>app-image-windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <jpackage.icon>${project.basedir}/src/main/packaging/icon.ico</jpackage.icon>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>app-image-mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <jpackage.icon>${project.basedir}/src/main/packaging/icon.icns</jpackage.icon>
+      </properties>
+    </profile>
+
+    <!--
+      Publishes a GitHub release containing the archives found in target/app-image/dist:
+
+        mvn -Prelease jreleaser:full-release
+
+      Requires the JRELEASER_GITHUB_TOKEN environment variable.
+    -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jreleaser</groupId>
+            <artifactId>jreleaser-maven-plugin</artifactId>
+            <version>${jreleaser.maven.plugin.version}</version>
+            <configuration>
+              <jreleaser>
+                <project>
+                  <name>tiemeplan</name>
+                  <license>Apache-2.0</license>
+                  <inceptionYear>2026</inceptionYear>
+                </project>
+                <release>
+                  <github>
+                    <owner>JoranVanBelle</owner>
+                    <name>tiemeplan</name>
+                    <tagName>v{{projectVersion}}</tagName>
+                    <releaseName>Tiemeplan {{projectVersion}}</releaseName>
+                    <!-- Closing milestones needs the issues permission, which the workflow token lacks. -->
+                    <milestone>
+                      <close>false</close>
+                    </milestone>
+                    <changelog>
+                      <formatted>ALWAYS</formatted>
+                      <preset>conventional-commits</preset>
+                    </changelog>
+                  </github>
+                </release>
+                <checksum>
+                  <individual>true</individual>
+                </checksum>
+                <files>
+                  <globs>
+                    <glob>
+                      <pattern>${app.image.directory}/dist/*.tar.gz</pattern>
+                    </glob>
+                    <glob>
+                      <pattern>${app.image.directory}/dist/*.zip</pattern>
+                    </glob>
+                  </globs>
+                </files>
+              </jreleaser>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
