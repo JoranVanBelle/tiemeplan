@@ -54,7 +54,7 @@ jobs:
       - name: Get current version
         id: get_version
         run: |
-          CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          CURRENT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "Current version: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
 
@@ -90,7 +90,7 @@ jobs:
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Set new version
-        run: mvn -B versions:set -DnewVersion=${{ steps.bump_version.outputs.new_version }}
+        run: ./mvnw -B versions:set -DnewVersion=${{ steps.bump_version.outputs.new_version }}
 
       - name: Install virtual display
         if: runner.os == 'Linux'
@@ -99,12 +99,12 @@ jobs:
       # The JavaFX tests need a display, so the build runs inside a virtual one.
       - name: Test and build application image (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a mvn -B clean verify -Papp-image
+        run: xvfb-run -a ./mvnw -B clean verify -Papp-image
 
       # Tests run on Linux only; the other platforms just package the application.
       - name: Build application image (Windows)
         if: runner.os == 'Windows'
-        run: mvn -B clean package -Papp-image -DskipTests
+        run: ./mvnw -B clean package -Papp-image -DskipTests
 
       # macOS rejects application versions starting with 0, so 0.x.y is packaged as 1.x.y.
       # This only affects the bundle metadata; the application itself reports the real version.
@@ -117,7 +117,7 @@ jobs:
           if [[ "$NEW_VERSION" == 0.* ]]; then
             BUNDLE_VERSION="1.${NEW_VERSION#0.}"
           fi
-          mvn -B clean package -Papp-image -DskipTests -Djpackage.app.version="$BUNDLE_VERSION"
+          ./mvnw -B clean package -Papp-image -DskipTests -Djpackage.app.version="$BUNDLE_VERSION"
 
       - name: Archive application image (Linux)
         if: runner.os == 'Linux'
@@ -161,7 +161,7 @@ jobs:
           cache: maven
 
       - name: Set new version
-        run: mvn -B versions:set -DnewVersion=${{ needs.package.outputs.version }}
+        run: ./mvnw -B versions:set -DnewVersion=${{ needs.package.outputs.version }}
 
       - name: Commit and tag
         env:
@@ -200,7 +200,7 @@ jobs:
       - name: Release with JReleaser
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B -Prelease jreleaser:full-release
+        run: ./mvnw -B -Prelease jreleaser:full-release
 
       - name: Upload JReleaser logs
         if: always()

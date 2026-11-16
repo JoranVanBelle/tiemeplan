@@ -32,7 +32,7 @@ The Windows and macOS downloads are not signed yet:
 Build locally (requires JDK 26):
 
 ```bash
-mvn clean package -Papp-image
+./mvnw clean package -Papp-image
 ```
 
 The application image is written to `target/app-image/dist`.

@@ -1,0 +1,40 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+name: ci
+
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/maven.yml'
+      - '.github/workflows/release.yml'
+      - 'README.md'
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 26
+        uses: actions/setup-java@v4
+        with:
+          java-version: '26'
+          distribution: 'temurin'
+
+      - name: Make Maven wrapper executable
+        run: chmod +x ./mvnw
+
+      - name: Run Spotless
+        run: ./mvnw spotless:check
+
+      - name: Install virtual display
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      # The JavaFX tests need a display, so the build runs inside a virtual one.
+      - name: Build with Maven
+        run: xvfb-run -a ./mvnw -B package --file pom.xml
