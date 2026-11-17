@@ -7,6 +7,7 @@ import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
+import java.util.Comparator;
 import java.util.List;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -46,7 +47,12 @@ public class SolverService extends Service<BacktrackResult> {
     @Override
     protected Task<BacktrackResult> createTask() {
         var solverClassrooms = classrooms == null ? List.<Classroom>of() : List.copyOf(classrooms);
-        var solverTimeslots = timeslots == null ? List.<Timeslot>of() : List.copyOf(timeslots);
+        var solverTimeslots = timeslots == null ? List.<Timeslot>of() : timeslots.stream()
+                .sorted(Comparator.comparing(Timeslot::dayOfWeek)
+                        .thenComparing(Timeslot::startTime))
+                .toList();
+
+        // todo - group courses next to each other when needed
         var solverCourses = courses == null ? List.<Course>of() : List.copyOf(courses);
         cancellationToken = new CancellationToken();
 

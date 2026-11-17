@@ -260,8 +260,6 @@ public class SolverTest {
         var result = solver.solve(courses);
 
         // then
-        // todo - more favorable would be to schedule Ms. Johansen at 10 and at 11 so
-        // that she had no gaps in her schedule
         assertThat(result).isInstanceOfSatisfying(BacktrackResult.Success.class,
                 res -> ClassScheduleAssert.assertThat(res.solution())
                         .hasNumberOfCourses(3)

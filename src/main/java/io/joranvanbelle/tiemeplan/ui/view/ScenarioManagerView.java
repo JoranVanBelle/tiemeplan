@@ -95,6 +95,7 @@ public class ScenarioManagerView implements ViewProvider {
         return button;
     }
 
+    // todo - update schema release version to 2
     private void exportScenario(boolean json) {
         File file = chooseSaveFile(json);
         if (file == null) {
@@ -112,6 +113,7 @@ public class ScenarioManagerView implements ViewProvider {
                 error -> Dialogs.error(owner(), "Export failed", Dialogs.messageOf(error)));
     }
 
+    // todo - when id is missing, generate one (backwards compatible)
     private void importScenario(boolean json) {
         File file = chooseOpenFile(json);
         if (file == null) {

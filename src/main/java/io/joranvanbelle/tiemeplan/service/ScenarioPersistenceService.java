@@ -67,7 +67,7 @@ public class ScenarioPersistenceService {
             throw new IllegalArgumentException(
                     "Saved with newer schema version " + dto.schemaVersion() + ". Update the app.");
         }
-        if (dto.schemaVersion() < ScenarioDto.CURRENT_SCHEMA_VERSION) {
+        if (dto.schemaVersion() < ScenarioDto.CURRENT_SCHEMA_VERSION) { // todo - support up until 2 older versions
             throw new IllegalArgumentException(
                     "Saved with older schema version " + dto.schemaVersion() + ". Migration not supported.");
         }

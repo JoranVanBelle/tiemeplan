@@ -3,12 +3,16 @@ package io.joranvanbelle.tiemeplan.variables;
 import java.util.List;
 
 public record Course(
+        String id,
         Teacher teacher,
         Subject subject,
-        List<StudentGroup> studentGroups) {
+        List<StudentGroup> studentGroups,
+        String nextCourseId) {
 
     public int numberOfParticipant() {
-        return studentGroups.stream().map(StudentGroup::size).reduce(0, Integer::sum);
+        return studentGroups.stream()
+                .map(StudentGroup::size)
+                .reduce(0, Integer::sum);
     }
 
     public static Builder newBuilder() {
@@ -16,11 +20,18 @@ public record Course(
     }
 
     public static final class Builder {
+        private String id;
         private Teacher teacher;
         private Subject subject;
         private List<StudentGroup> studentGroups;
+        private String nextCourseId;
 
         private Builder() {
+        }
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
         }
 
         public Builder teacher(String teacher) {
@@ -53,8 +64,13 @@ public record Course(
             return this;
         }
 
+        public Builder nextCourseId(String nextCourseId) {
+            this.nextCourseId = nextCourseId;
+            return this;
+        }
+
         public Course build() {
-            return new Course(teacher, subject, studentGroups);
+            return new Course(id, teacher, subject, studentGroups, nextCourseId);
         }
     }
 }

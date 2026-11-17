@@ -25,13 +25,13 @@ public final class ScenarioMapper {
     }
 
     public static Course toDomain(CourseDto dto) {
-        return new Course(toDomain(dto.teacher()), toDomain(dto.subject()),
-                dto.studentGroups().stream().map(ScenarioMapper::toDomain).toList());
+        return new Course(dto.id(), toDomain(dto.teacher()), toDomain(dto.subject()),
+                dto.studentGroups().stream().map(ScenarioMapper::toDomain).toList(), dto.nextCourseId());
     }
 
     public static CourseDto toDto(Course course) {
-        return new CourseDto(toDto(course.teacher()), toDto(course.subject()),
-                course.studentGroups().stream().map(ScenarioMapper::toDto).toList());
+        return new CourseDto(course.id(), toDto(course.teacher()), toDto(course.subject()),
+                course.studentGroups().stream().map(ScenarioMapper::toDto).toList(), course.nextCourseId());
     }
 
     public static Timeslot toDomain(TimeslotDto dto) {
@@ -70,47 +70,23 @@ public final class ScenarioMapper {
         return dtos.stream().map(ScenarioMapper::toDomain).toList();
     }
 
-    public static List<CourseDto> toCourseDtos(List<Course> courses) {
-        return courses.stream().map(ScenarioMapper::toDto).toList();
-    }
-
     public static List<Classroom> toDomainClassrooms(List<ClassroomDto> dtos) {
         return dtos.stream().map(ScenarioMapper::toDomain).toList();
-    }
-
-    public static List<ClassroomDto> toClassroomDtos(List<Classroom> classrooms) {
-        return classrooms.stream().map(ScenarioMapper::toDto).toList();
     }
 
     public static List<Timeslot> toDomainTimeslots(List<TimeslotDto> dtos) {
         return dtos.stream().map(ScenarioMapper::toDomain).toList();
     }
 
-    public static List<TimeslotDto> toTimeslotDtos(List<Timeslot> timeslots) {
-        return timeslots.stream().map(ScenarioMapper::toDto).toList();
-    }
-
     public static List<Teacher> toDomainTeachers(List<TeacherDto> dtos) {
         return dtos.stream().map(ScenarioMapper::toDomain).toList();
-    }
-
-    public static List<TeacherDto> toTeacherDtos(List<Teacher> teachers) {
-        return teachers.stream().map(ScenarioMapper::toDto).toList();
     }
 
     public static List<Subject> toDomainSubjects(List<SubjectDto> dtos) {
         return dtos.stream().map(ScenarioMapper::toDomain).toList();
     }
 
-    public static List<SubjectDto> toSubjectDtos(List<Subject> subjects) {
-        return subjects.stream().map(ScenarioMapper::toDto).toList();
-    }
-
     public static List<StudentGroup> toDomainStudentGroups(List<StudentGroupDto> dtos) {
         return dtos.stream().map(ScenarioMapper::toDomain).toList();
-    }
-
-    public static List<StudentGroupDto> toStudentGroupDtos(List<StudentGroup> studentGroups) {
-        return studentGroups.stream().map(ScenarioMapper::toDto).toList();
     }
 }

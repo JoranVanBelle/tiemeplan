@@ -21,6 +21,7 @@ public class ScheduledCourseMother {
 
     public static class Builder {
 
+        private String courseId = "a42a1cd7-1dcf-49aa-842d-c8527aa1f310";
         private String classroom = "room1";
         private int classroomCapacity = 10;
         private List<Timeslot> occupiedTimeslots = new ArrayList<>();
@@ -29,6 +30,11 @@ public class ScheduledCourseMother {
         private String teacher = "Mr. Johnson";
         private String subject = "English";
         private List<StudentGroup> studentGroups = new ArrayList<>(List.of(new StudentGroup("1A", 10)));
+
+        public Builder courseId(String courseId) {
+            this.courseId = courseId;
+            return this;
+        }
 
         public Builder classroom(String classroom) {
             this.classroom = classroom;
@@ -75,6 +81,7 @@ public class ScheduledCourseMother {
                     new Classroom(classroom, classroomCapacity, occupiedTimeslots),
                     new Timeslot(dayOfWeek, startTime),
                     new Course(
+                            courseId,
                             new Teacher(teacher),
                             new Subject(subject),
                             studentGroups));

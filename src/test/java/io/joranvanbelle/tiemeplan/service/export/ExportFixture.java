@@ -11,6 +11,7 @@ import io.joranvanbelle.tiemeplan.variables.Timeslot;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 public final class ExportFixture {
 
@@ -45,17 +46,17 @@ public final class ExportFixture {
 
     public static List<Course> courses() {
         return List.of(
-                new Course(JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B)),
-                new Course(JOHN, PHYSICS, List.of(GROUP_B)),
-                new Course(JANE, MATHEMATICS, List.of(GROUP_A)));
+                new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B)),
+                new Course(UUID.randomUUID().toString(), JOHN, PHYSICS, List.of(GROUP_B)),
+                new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A)));
     }
 
     public static ClassSchedule schedule() {
         return ClassSchedule.empty()
                 .addUnavailability(List.of(ROOM_101, ROOM_102))
-                .assign(ROOM_101, MON_09, new Course(JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B)))
-                .assign(ROOM_102, TUE_10, new Course(JOHN, PHYSICS, List.of(GROUP_B)))
-                .assign(ROOM_101, MON_13, new Course(JANE, MATHEMATICS, List.of(GROUP_A)));
+                .assign(ROOM_101, MON_09, new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B)))
+                .assign(ROOM_102, TUE_10, new Course(UUID.randomUUID().toString(), JOHN, PHYSICS, List.of(GROUP_B)))
+                .assign(ROOM_101, MON_13, new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A)));
     }
 
     public static TimetableExportRequest request(ExportFormat format, ExportAudience audience) {

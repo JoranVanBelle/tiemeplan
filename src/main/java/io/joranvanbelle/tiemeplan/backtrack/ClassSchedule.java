@@ -40,6 +40,7 @@ public class ClassSchedule {
         return this;
     }
 
+    // todo - add check if course follows up previous course when required
     public boolean isValid(Classroom classroom, Timeslot timeslot, Course course) {
         if (isRoomOccupied(classroom, timeslot) || !classroom.canHoldStudentGroup(course.numberOfParticipant())) {
             return false;

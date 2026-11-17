@@ -98,6 +98,13 @@ public final class ScenarioValidator {
         }
     }
 
+    /*
+    TODO - validate if next course is known (course.next-unknown)
+        validate if next course is not yourself (course.next-self)
+        validate if 2 courses do not reference the same course as next (course.next-two-predecessors)
+        validate for cycles (infinite loop CourseA -> CourseB -> CourseC -> CourseA) (course.next-cycle)
+        validate if chain is not longer then amount of timeslots (chain length > timeslot count) (course.chain-too-long)
+     */
     private static void validateCourses(ScenarioViewModel scenario, List<ValidationIssue> issues) {
         var hasAnyClassroom = !scenario.classrooms().isEmpty();
 

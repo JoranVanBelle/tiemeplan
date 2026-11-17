@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -124,8 +125,8 @@ class TimetableExportModelFactoryTest {
 
     @Test
     void conflictsAreSurfacedInsteadOfDropped() {
-        Course first = new Course(ExportFixture.JANE, ExportFixture.MATHEMATICS, List.of(ExportFixture.GROUP_A));
-        Course second = new Course(ExportFixture.JANE, ExportFixture.PHYSICS, List.of(ExportFixture.GROUP_B));
+        Course first = new Course(UUID.randomUUID().toString(), ExportFixture.JANE, ExportFixture.MATHEMATICS, List.of(ExportFixture.GROUP_A));
+        Course second = new Course(UUID.randomUUID().toString(), ExportFixture.JANE, ExportFixture.PHYSICS, List.of(ExportFixture.GROUP_B));
         ClassSchedule schedule = ClassSchedule.empty()
                 .assign(ExportFixture.ROOM_101, ExportFixture.MON_09, first)
                 .assign(ExportFixture.ROOM_102, ExportFixture.MON_09, second);

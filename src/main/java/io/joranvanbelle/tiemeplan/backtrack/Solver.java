@@ -5,6 +5,7 @@ import io.joranvanbelle.tiemeplan.variables.Classroom;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.Timeslot;
 
+import java.util.Collections;
 import java.util.List;
 
 /**

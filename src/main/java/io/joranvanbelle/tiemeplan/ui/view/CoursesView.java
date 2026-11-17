@@ -196,7 +196,7 @@ public class CoursesView implements ViewProvider {
         Button addBtn = new Button("Add Course");
         addBtn.getStyleClass().add("primary-button");
         addBtn.setOnAction(e -> showAddDialog());
-        Button removeBtn = new Button("Remove");
+        Button removeBtn = new Button("Remove");    // todo - remove link with other courses
         removeBtn.getStyleClass().add("ghost-button");
         removeBtn.setOnAction(e -> {
             var sel = table.getSelectionModel().getSelectedItem();

@@ -15,8 +15,11 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.util.UUID;
+
 public class CourseViewModel {
 
+    private final StringProperty id = new SimpleStringProperty("");
     private final StringProperty teacher = new SimpleStringProperty("");
     private final StringProperty subject = new SimpleStringProperty("");
     private final ObservableList<StudentGroupViewModel> studentGroups = FXCollections
@@ -28,18 +31,25 @@ public class CourseViewModel {
     }
 
     public CourseViewModel(String teacher, String subject) {
+        this.id.set(UUID.randomUUID().toString());
+        this.teacher.set(teacher);
+        this.subject.set(subject);
+    }
+
+    public CourseViewModel(String id, String teacher, String subject) {
+        this.id.set(id);
         this.teacher.set(teacher);
         this.subject.set(subject);
     }
 
     public static CourseViewModel of(Course course) {
-        var viewModel = new CourseViewModel(course.teacher().value(), course.subject().value());
+        var viewModel = new CourseViewModel(course.id(), course.teacher().value(), course.subject().value());
         course.studentGroups().stream().map(StudentGroupViewModel::of).forEach(viewModel.studentGroups::add);
         return viewModel;
     }
 
     public static CourseViewModel of(CourseDto dto) {
-        var viewModel = new CourseViewModel(dto.teacher().value(), dto.subject().value());
+        var viewModel = new CourseViewModel(dto.id(), dto.teacher().value(), dto.subject().value());
         dto.studentGroups().stream().map(StudentGroupViewModel::of).forEach(viewModel.studentGroups::add);
         return viewModel;
     }
@@ -81,12 +91,7 @@ public class CourseViewModel {
     }
 
     public Course toDomain() {
-        return new Course(new Teacher(teacher.get()), new Subject(subject.get()),
+        return new Course(id.get(), new Teacher(teacher.get()), new Subject(subject.get()),
                 studentGroups.stream().map(StudentGroupViewModel::toDomain).toList());
-    }
-
-    public CourseDto toDto() {
-        return new CourseDto(new TeacherDto(teacher.get()), new SubjectDto(subject.get()),
-                studentGroups.stream().map(StudentGroupViewModel::toDto).toList());
     }
 }

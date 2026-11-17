@@ -12,6 +12,7 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,8 @@ class SolverCancellationTest {
         var classrooms = List.of(new Classroom("room1", 30, List.of()));
         var courses = new ArrayList<Course>();
         for (int i = 0; i < 20; i++) {
-            courses.add(new Course(new Teacher("T" + i), new Subject("S" + i), List.of(new StudentGroup("G" + i, 10))));
+            var id = UUID.randomUUID().toString();
+            courses.add(new Course(id, new Teacher("T" + i), new Subject("S" + i), List.of(new StudentGroup("G" + i, 10))));
         }
 
         var solver = new Solver(classrooms, timeslots);

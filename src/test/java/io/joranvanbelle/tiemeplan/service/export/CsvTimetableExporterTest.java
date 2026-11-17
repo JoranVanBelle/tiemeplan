@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -137,10 +138,11 @@ class CsvTimetableExporterTest {
 
     @Test
     void fieldsWithSeparatorsQuotesAndUnicodeAreQuotedAndRoundTrip() throws Exception {
+        var id = UUID.randomUUID().toString();
         Teacher teacher = new Teacher("Doe; Jane");
         Subject subject = new Subject("Math; Advanced");
         StudentGroup group = new StudentGroup("Group \"A\"", 20);
-        Course course = new Course(teacher, subject, List.of(group));
+        Course course = new Course(id, teacher, subject, List.of(group));
         ScenarioSnapshot snapshot = new ScenarioSnapshot(
                 List.of(teacher),
                 List.of(subject),
