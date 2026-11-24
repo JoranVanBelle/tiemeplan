@@ -53,8 +53,8 @@ class ScenarioValidatorTest {
     void detectsIncompleteCourse() {
         var scenario = validScenario();
         var course = scenario.courses().getFirst();
-        course.setTeacher(" ");
-        course.setSubject("");
+        course.teacher(" ");
+        course.subject("");
         course.studentGroups().clear();
 
         assertThat(errorCodes(scenario)).contains("course.teacher-blank", "course.subject-blank", "course.no-groups");

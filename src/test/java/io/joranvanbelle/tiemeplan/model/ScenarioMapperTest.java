@@ -23,7 +23,7 @@ class ScenarioMapperTest {
         var timeslot = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 0));
         var classroom = new Classroom("room1", 30, List.of(timeslot));
         var group = new StudentGroup("1A", 10);
-        var course = new Course(UUID.randomUUID().toString(), new Teacher("Ms. Smith"), new Subject("Math"), List.of(group));
+        var course = new Course(UUID.randomUUID().toString(), new Teacher("Ms. Smith"), new Subject("Math"), List.of(group), null);
         var scenario = new ScenarioDto(ScenarioDto.CURRENT_SCHEMA_VERSION,
                 List.of(ScenarioMapper.toDto(course)),
                 List.of(ScenarioMapper.toDto(classroom)),

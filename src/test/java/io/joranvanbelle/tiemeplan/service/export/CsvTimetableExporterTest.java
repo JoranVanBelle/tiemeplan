@@ -142,7 +142,7 @@ class CsvTimetableExporterTest {
         Teacher teacher = new Teacher("Doe; Jane");
         Subject subject = new Subject("Math; Advanced");
         StudentGroup group = new StudentGroup("Group \"A\"", 20);
-        Course course = new Course(id, teacher, subject, List.of(group));
+        Course course = new Course(id, teacher, subject, List.of(group), null);
         ScenarioSnapshot snapshot = new ScenarioSnapshot(
                 List.of(teacher),
                 List.of(subject),

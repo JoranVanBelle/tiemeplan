@@ -1,11 +1,18 @@
 package io.joranvanbelle.tiemeplan.viewmodel;
 
+import io.joranvanbelle.tiemeplan.service.CycleDetectionService;
+import io.joranvanbelle.tiemeplan.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class ScenarioValidator {
 
@@ -48,14 +55,14 @@ public final class ScenarioValidator {
             }
             if (classroom.getCapacity() <= 0) {
                 issues.add(error(ValidationArea.SETUP, "classroom.capacity",
-                        "Classroom '%s' must have a positive capacity.".formatted(label(classroom.getName()))));
+                        "Classroom '%s' must have a positive capacity.".formatted(StringUtil.label(classroom.getName()))));
             }
             if (!definedTimeslots.isEmpty()) {
                 classroom.occupiedTimeslots().stream()
                         .filter(timeslot -> !definedTimeslots.contains(timeslot.toDomain()))
                         .forEach(timeslot -> issues.add(error(ValidationArea.SETUP, "classroom.unknown-timeslot",
                                 "Classroom '%s' is unavailable at %s %s, which is not a defined timeslot."
-                                        .formatted(label(classroom.getName()), timeslot.getDayOfWeek(),
+                                        .formatted(StringUtil.label(classroom.getName()), timeslot.getDayOfWeek(),
                                                 timeslot.getStartTime()))));
             }
         }
@@ -94,32 +101,23 @@ public final class ScenarioValidator {
         }
         if (group.getSize() <= 0) {
             issues.add(error(area, codePrefix + ".size",
-                    "Student group '%s' must have a positive size.".formatted(label(group.getName()))));
+                    "Student group '%s' must have a positive size.".formatted(StringUtil.label(group.getName()))));
         }
     }
 
-    /*
-    TODO - validate if next course is known (course.next-unknown)
-        validate if next course is not yourself (course.next-self)
-        validate if 2 courses do not reference the same course as next (course.next-two-predecessors)
-        validate for cycles (infinite loop CourseA -> CourseB -> CourseC -> CourseA) (course.next-cycle)
-        validate if chain is not longer then amount of timeslots (chain length > timeslot count) (course.chain-too-long)
-     */
     private static void validateCourses(ScenarioViewModel scenario, List<ValidationIssue> issues) {
         var hasAnyClassroom = !scenario.classrooms().isEmpty();
 
         for (var course : scenario.courses()) {
-            var courseLabel = "%s / %s".formatted(label(course.getTeacher()), label(course.getSubject()));
-
-            if (isBlank(course.getTeacher())) {
+            if (isBlank(course.teacher())) {
                 issues.add(error(ValidationArea.COURSES, "course.teacher-blank", "Every course needs a teacher."));
             }
-            if (isBlank(course.getSubject())) {
+            if (isBlank(course.subject())) {
                 issues.add(error(ValidationArea.COURSES, "course.subject-blank", "Every course needs a subject."));
             }
             if (course.studentGroups().isEmpty()) {
                 issues.add(error(ValidationArea.COURSES, "course.no-groups",
-                        "Course '%s' needs at least one student group.".formatted(courseLabel)));
+                        "Course '%s' needs at least one student group.".formatted(course.courseLabel())));
             }
 
             for (var group : course.studentGroups()) {
@@ -128,14 +126,47 @@ public final class ScenarioValidator {
 
             if (hasAnyClassroom) {
                 var fitsAnyClassroom = scenario.classrooms().stream()
-                        .anyMatch(classroom -> classroom.getCapacity() >= course.getParticipantCount());
+                        .anyMatch(classroom -> classroom.getCapacity() >= course.participantCount());
                 if (!fitsAnyClassroom) {
                     issues.add(error(ValidationArea.COURSES, "course.no-classroom-capacity",
                             "Course '%s' has %d participants but no classroom is large enough."
-                                    .formatted(courseLabel, course.getParticipantCount())));
+                                    .formatted(course.courseLabel(), course.participantCount())));
+                }
+            }
+
+            if (hasNextCourseId(course)) {
+                if (course.id().equals(course.nextCourseId())) {
+                    issues.add(error(ValidationArea.COURSES, "course.next-self",
+                        "Course '%s' has the same id as the next course.".formatted(course.courseLabel())));
+                }
+
+                if (scenario.courses().stream().noneMatch(c -> c.id().equals(course.nextCourseId()))) {
+                    issues.add(error(ValidationArea.COURSES, "course.next-unknown",
+                        "Course '%s' has an unknown next course id: '%s'.".formatted(course.courseLabel(), course.nextCourseId())));
+                }
+
+                if (scenario.courses().filtered(c -> c.id().equals(course.nextCourseId())).size() > 1) {
+                    issues.add(error(ValidationArea.COURSES, "course.next-two-predecessors",
+                        "Course '%s' has 2 courses referencing it as next.".formatted(course.courseLabel())));
+                }
+
+                if (CycleDetectionService.containsCycle(scenario.courses())
+                    instanceof CycleDetectionService.CycleDetectionResult.CycleDetected(var affectedCourseLabels)) {
+                    issues.add(error(ValidationArea.COURSES, "course.next-cycle",
+                        "Following courses form a cycle: %s".formatted(affectedCourseLabels)));
+                }
+
+                var longestChain = List.of();   // todo - get longest chain
+                if (longestChain.size() > scenario.timeslots().size()) {
+                    issues.add(error(ValidationArea.COURSES, "course.next-longest-chain",
+                        "Not enough timeslots to form a chain of %d courses.".formatted(longestChain.size())));
                 }
             }
         }
+    }
+
+    private static boolean hasNextCourseId(CourseViewModel course) {
+        return course.nextCourseId() != null;
     }
 
     private static void validateUnused(ScenarioViewModel scenario, List<ValidationIssue> issues) {
@@ -143,8 +174,8 @@ public final class ScenarioValidator {
             return;
         }
 
-        var usedTeachers = normalizedSet(scenario.courses().stream().map(CourseViewModel::getTeacher).toList());
-        var usedSubjects = normalizedSet(scenario.courses().stream().map(CourseViewModel::getSubject).toList());
+        var usedTeachers = normalizedSet(scenario.courses().stream().map(CourseViewModel::teacher).toList());
+        var usedSubjects = normalizedSet(scenario.courses().stream().map(CourseViewModel::subject).toList());
         var usedStudentGroups = normalizedSet(scenario.courses().stream()
                 .flatMap(course -> course.studentGroups().stream())
                 .map(StudentGroupViewModel::getName)
@@ -159,7 +190,7 @@ public final class ScenarioValidator {
     private static void reportUnused(List<String> names, Set<String> used, String code, String label,
             List<ValidationIssue> issues) {
         names.stream()
-                .filter(name -> !isBlank(name) && !used.contains(normalize(name)))
+                .filter(name -> !isBlank(name) && !used.contains(StringUtil.normalize(name)))
                 .forEach(name -> issues.add(warning(ValidationArea.SETUP, code,
                         "%s '%s' is not used by any course.".formatted(label, name.trim()))));
     }
@@ -169,7 +200,7 @@ public final class ScenarioValidator {
         var counts = new HashMap<String, Integer>();
         names.stream()
                 .filter(name -> !isBlank(name))
-                .map(ScenarioValidator::normalize)
+                .map(StringUtil::normalize)
                 .forEach(name -> counts.merge(name, 1, Integer::sum));
         counts.entrySet().stream()
                 .filter(entry -> entry.getValue() > 1)
@@ -179,20 +210,8 @@ public final class ScenarioValidator {
 
     private static Set<String> normalizedSet(List<String> values) {
         var result = new HashSet<String>();
-        values.stream().filter(value -> !isBlank(value)).map(ScenarioValidator::normalize).forEach(result::add);
+        values.stream().filter(value -> !isBlank(value)).map(StringUtil::normalize).forEach(result::add);
         return result;
-    }
-
-    private static String normalize(String value) {
-        return value.trim().toLowerCase(Locale.ROOT);
-    }
-
-    private static boolean isBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
-    private static String label(String value) {
-        return isBlank(value) ? "(unnamed)" : value.trim();
     }
 
     private static ValidationIssue error(ValidationArea area, String code, String message) {

@@ -12,7 +12,7 @@ assignees: ''
 
 ## Steps to reproduce
 
-<!-- Steps to reproduce the behaviour -->
+<!-- Steps to reproduce the behaviour. -->
 
 ## Expected behaviour
 
@@ -28,7 +28,7 @@ assignees: ''
 
 ## Diagnostics
 
-<!-- Copy the diagnostics from the left bottom corner in the About-tab -->
+<!-- Copy the diagnostics from the right bottom corner in the About-tab. -->
 
 ## Additional context
 

@@ -84,7 +84,8 @@ public class ScheduledCourseMother {
                             courseId,
                             new Teacher(teacher),
                             new Subject(subject),
-                            studentGroups));
+                            studentGroups,
+                            null));
         }
     }
 

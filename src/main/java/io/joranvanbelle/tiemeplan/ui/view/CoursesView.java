@@ -40,11 +40,8 @@ import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 public class CoursesView implements ViewProvider {
-    private final ScenarioViewModel scenarioViewModel;
 
-    public CoursesView() {
-        this(new ScenarioViewModel());
-    }
+    private final ScenarioViewModel scenarioViewModel;
 
     public CoursesView(ScenarioViewModel scenarioViewModel) {
         this.scenarioViewModel = scenarioViewModel;
@@ -86,7 +83,7 @@ public class CoursesView implements ViewProvider {
                 () -> {
                     StringBuilder sb = new StringBuilder();
                     for (StudentGroupViewModel g : c.getValue().studentGroups()) {
-                        if (sb.length() > 0)
+                        if (!sb.isEmpty())
                             sb.append(", ");
                         sb.append(g.getName());
                     }
@@ -147,10 +144,10 @@ public class CoursesView implements ViewProvider {
             TableRow<CourseViewModel> row = new TableRow<>();
             row.setOnDragDetected(event -> {
                 if (!row.isEmpty()) {
-                    Integer idx = row.getIndex();
+                    var idx = row.getIndex();
                     Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
                     ClipboardContent cc = new ClipboardContent();
-                    cc.putString(idx.toString());
+                    cc.putString(String.valueOf(idx));
                     db.setContent(cc);
                     row.setOpacity(0.5);
                     event.consume();
@@ -195,7 +192,7 @@ public class CoursesView implements ViewProvider {
         HBox actions = new HBox(8);
         Button addBtn = new Button("Add Course");
         addBtn.getStyleClass().add("primary-button");
-        addBtn.setOnAction(e -> showAddDialog());
+        addBtn.setOnAction(_ -> showAddDialog());
         Button removeBtn = new Button("Remove");    // todo - remove link with other courses
         removeBtn.getStyleClass().add("ghost-button");
         removeBtn.setOnAction(e -> {

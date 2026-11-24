@@ -125,8 +125,8 @@ class TimetableExportModelFactoryTest {
 
     @Test
     void conflictsAreSurfacedInsteadOfDropped() {
-        Course first = new Course(UUID.randomUUID().toString(), ExportFixture.JANE, ExportFixture.MATHEMATICS, List.of(ExportFixture.GROUP_A));
-        Course second = new Course(UUID.randomUUID().toString(), ExportFixture.JANE, ExportFixture.PHYSICS, List.of(ExportFixture.GROUP_B));
+        Course first = new Course(UUID.randomUUID().toString(), ExportFixture.JANE, ExportFixture.MATHEMATICS, List.of(ExportFixture.GROUP_A), null);
+        Course second = new Course(UUID.randomUUID().toString(), ExportFixture.JANE, ExportFixture.PHYSICS, List.of(ExportFixture.GROUP_B), null);
         ClassSchedule schedule = ClassSchedule.empty()
                 .assign(ExportFixture.ROOM_101, ExportFixture.MON_09, first)
                 .assign(ExportFixture.ROOM_102, ExportFixture.MON_09, second);

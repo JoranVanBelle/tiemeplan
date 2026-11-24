@@ -1,8 +1,10 @@
 package io.joranvanbelle.tiemeplan.service;
 
 import io.joranvanbelle.tiemeplan.model.ScenarioDto;
+import io.joranvanbelle.tiemeplan.util.AppInfo;
 import io.joranvanbelle.tiemeplan.viewmodel.ScenarioViewModel;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.File;
@@ -10,7 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 public class ScenarioPersistenceService {
-    private final ObjectMapper jsonMapper = new ObjectMapper();
+    private final JsonMapper jsonMapper = new JsonMapper();
     private final ObjectMapper yamlMapper = new YAMLMapper();
 
     public void saveJson(ScenarioViewModel viewModel, File file) throws IOException {
@@ -18,7 +20,6 @@ public class ScenarioPersistenceService {
     }
 
     public void saveJson(ScenarioDto dto, File file) throws IOException {
-        ensureSchema(dto);
         String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dto);
         Files.writeString(file.toPath(), json);
     }
@@ -28,7 +29,6 @@ public class ScenarioPersistenceService {
     }
 
     public void saveYaml(ScenarioDto dto, File file) throws IOException {
-        ensureSchema(dto);
         String yaml = yamlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(dto);
         Files.writeString(file.toPath(), yaml);
     }
@@ -55,10 +55,6 @@ public class ScenarioPersistenceService {
         return dto;
     }
 
-    private void ensureSchema(ScenarioDto dto) {
-        // Schema version is set by ScenarioViewModel.toDto() to CURRENT_SCHEMA_VERSION
-    }
-
     private void validateSchema(ScenarioDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("Invalid scenario file");
@@ -67,9 +63,16 @@ public class ScenarioPersistenceService {
             throw new IllegalArgumentException(
                     "Saved with newer schema version " + dto.schemaVersion() + ". Update the app.");
         }
-        if (dto.schemaVersion() < ScenarioDto.CURRENT_SCHEMA_VERSION) { // todo - support up until 2 older versions
+        if (dto.schemaVersion() < ScenarioDto.CURRENT_SCHEMA_VERSION - 2) {
             throw new IllegalArgumentException(
-                    "Saved with older schema version " + dto.schemaVersion() + ". Migration not supported.");
+                """
+                %s is no longer supported by Tiemeplan version %s.
+                Tiemeplan supports versions %s until %s.
+                Use an older version of Tiemeplan to open this file."""
+                    .formatted(dto.schemaVersion(),
+                        AppInfo.getVersion(),
+                        ScenarioDto.CURRENT_SCHEMA_VERSION - 2,
+                        ScenarioDto.CURRENT_SCHEMA_VERSION));
         }
     }
 }

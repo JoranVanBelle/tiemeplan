@@ -11,6 +11,7 @@ module io.joranvanbelle.tiemeplan {
     requires com.fasterxml.jackson.annotation;
     requires com.github.librepdf.openpdf;
     requires com.opencsv;
+    requires org.apache.commons.lang3;
 
     exports io.joranvanbelle.tiemeplan;
     exports io.joranvanbelle.tiemeplan.app;

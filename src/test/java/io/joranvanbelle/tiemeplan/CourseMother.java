@@ -19,6 +19,7 @@ public class CourseMother {
         private Teacher teacher = new Teacher("Ms. Smith");
         private Subject subject = new Subject("Math");
         private List<StudentGroup> studentGroups = List.of(new StudentGroup("6A", 10));
+        private String nextCourseId = null;
 
         public Builder id(String id) {
             this.id = id;
@@ -45,8 +46,13 @@ public class CourseMother {
             return this;
         }
 
+        public Builder nextCourseId(String nextCourseId) {
+            this.nextCourseId = nextCourseId;
+            return this;
+        }
+
         public Course build() {
-            return new Course(id, teacher, subject, studentGroups);
+            return new Course(id, teacher, subject, studentGroups, nextCourseId);
         }
     }
 

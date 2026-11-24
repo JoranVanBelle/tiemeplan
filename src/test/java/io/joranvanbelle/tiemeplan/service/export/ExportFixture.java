@@ -46,17 +46,17 @@ public final class ExportFixture {
 
     public static List<Course> courses() {
         return List.of(
-                new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B)),
-                new Course(UUID.randomUUID().toString(), JOHN, PHYSICS, List.of(GROUP_B)),
-                new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A)));
+                new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B), null),
+                new Course(UUID.randomUUID().toString(), JOHN, PHYSICS, List.of(GROUP_B), null),
+                new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A), null));
     }
 
     public static ClassSchedule schedule() {
         return ClassSchedule.empty()
                 .addUnavailability(List.of(ROOM_101, ROOM_102))
-                .assign(ROOM_101, MON_09, new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B)))
-                .assign(ROOM_102, TUE_10, new Course(UUID.randomUUID().toString(), JOHN, PHYSICS, List.of(GROUP_B)))
-                .assign(ROOM_101, MON_13, new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A)));
+                .assign(ROOM_101, MON_09, new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A, GROUP_B), null))
+                .assign(ROOM_102, TUE_10, new Course(UUID.randomUUID().toString(), JOHN, PHYSICS, List.of(GROUP_B), null))
+                .assign(ROOM_101, MON_13, new Course(UUID.randomUUID().toString(), JANE, MATHEMATICS, List.of(GROUP_A), null));
     }
 
     public static TimetableExportRequest request(ExportFormat format, ExportAudience audience) {

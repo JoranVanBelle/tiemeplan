@@ -28,7 +28,7 @@ class SolverCancellationTest {
         var courses = new ArrayList<Course>();
         for (int i = 0; i < 20; i++) {
             var id = UUID.randomUUID().toString();
-            courses.add(new Course(id, new Teacher("T" + i), new Subject("S" + i), List.of(new StudentGroup("G" + i, 10))));
+            courses.add(new Course(id, new Teacher("T" + i), new Subject("S" + i), List.of(new StudentGroup("G" + i, 10)), null));
         }
 
         var solver = new Solver(classrooms, timeslots);

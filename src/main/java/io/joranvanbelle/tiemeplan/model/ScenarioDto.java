@@ -14,7 +14,7 @@ public record ScenarioDto(
         @JsonProperty("subjects") List<SubjectDto> subjects,
         @JsonProperty("studentGroups") List<StudentGroupDto> studentGroups) {
 
-    public static final int CURRENT_SCHEMA_VERSION = 1;
+    public static final int CURRENT_SCHEMA_VERSION = 2;
 
     public ScenarioDto {
         courses = courses == null ? List.of() : List.copyOf(courses);

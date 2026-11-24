@@ -1,8 +1,7 @@
 package io.joranvanbelle.tiemeplan.viewmodel;
 
 import io.joranvanbelle.tiemeplan.model.CourseDto;
-import io.joranvanbelle.tiemeplan.model.SubjectDto;
-import io.joranvanbelle.tiemeplan.model.TeacherDto;
+import io.joranvanbelle.tiemeplan.util.StringUtil;
 import io.joranvanbelle.tiemeplan.variables.Course;
 import io.joranvanbelle.tiemeplan.variables.Subject;
 import io.joranvanbelle.tiemeplan.variables.Teacher;
@@ -26,6 +25,7 @@ public class CourseViewModel {
             .observableArrayList(group -> new Observable[] { group.nameProperty(), group.sizeProperty() });
     private final IntegerBinding participantCount = Bindings.createIntegerBinding(
             () -> studentGroups.stream().mapToInt(StudentGroupViewModel::getSize).sum(), studentGroups);
+    private final StringProperty nextCourseId = new SimpleStringProperty("");
 
     public CourseViewModel() {
     }
@@ -34,22 +34,24 @@ public class CourseViewModel {
         this.id.set(UUID.randomUUID().toString());
         this.teacher.set(teacher);
         this.subject.set(subject);
+        this.nextCourseId.set(null);
     }
 
-    public CourseViewModel(String id, String teacher, String subject) {
+    public CourseViewModel(String id, String teacher, String subject, String nextCourseId) {
         this.id.set(id);
         this.teacher.set(teacher);
         this.subject.set(subject);
+        this.nextCourseId.set(nextCourseId);
     }
 
     public static CourseViewModel of(Course course) {
-        var viewModel = new CourseViewModel(course.id(), course.teacher().value(), course.subject().value());
+        var viewModel = new CourseViewModel(course.id(), course.teacher().value(), course.subject().value(), course.nextCourseId());
         course.studentGroups().stream().map(StudentGroupViewModel::of).forEach(viewModel.studentGroups::add);
         return viewModel;
     }
 
     public static CourseViewModel of(CourseDto dto) {
-        var viewModel = new CourseViewModel(dto.id(), dto.teacher().value(), dto.subject().value());
+        var viewModel = new CourseViewModel(dto.id(), dto.teacher().value(), dto.subject().value(), dto.nextCourseId());
         dto.studentGroups().stream().map(StudentGroupViewModel::of).forEach(viewModel.studentGroups::add);
         return viewModel;
     }
@@ -58,11 +60,15 @@ public class CourseViewModel {
         return teacher;
     }
 
-    public String getTeacher() {
+    public String id() {
+        return id.get();
+    }
+
+    public String teacher() {
         return teacher.get();
     }
 
-    public void setTeacher(String value) {
+    public void teacher(String value) {
         teacher.set(value);
     }
 
@@ -70,11 +76,11 @@ public class CourseViewModel {
         return subject;
     }
 
-    public String getSubject() {
+    public String subject() {
         return subject.get();
     }
 
-    public void setSubject(String value) {
+    public void subject(String value) {
         subject.set(value);
     }
 
@@ -86,12 +92,29 @@ public class CourseViewModel {
         return participantCount;
     }
 
-    public int getParticipantCount() {
+    public int participantCount() {
         return participantCount.get();
     }
 
+    public StringProperty nextCourseIdProperty() {
+        return nextCourseId;
+    }
+
+    public String nextCourseId() {
+        return nextCourseId.get();
+    }
+
+    public String courseLabel() {
+        return "%s / %s".formatted(StringUtil.label(teacher.get()), StringUtil.label(subject.get()));
+    }
+
     public Course toDomain() {
-        return new Course(id.get(), new Teacher(teacher.get()), new Subject(subject.get()),
-                studentGroups.stream().map(StudentGroupViewModel::toDomain).toList());
+        return Course.newBuilder()
+            .id(id.get())
+            .teacher(new Teacher(teacher.get()))
+            .subject(new Subject(subject.get()))
+            .studentGroup(studentGroups.stream().map(StudentGroupViewModel::toDomain).toList())
+            .nextCourseId(nextCourseId.get())
+            .build();
     }
 }

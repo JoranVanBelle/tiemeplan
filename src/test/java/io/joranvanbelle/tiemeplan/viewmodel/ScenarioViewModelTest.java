@@ -65,10 +65,10 @@ class ScenarioViewModelTest {
         var group = new StudentGroupViewModel("1A", 10);
         course.studentGroups().add(group);
 
-        assertThat(course.getParticipantCount()).isEqualTo(10);
+        assertThat(course.participantCount()).isEqualTo(10);
 
         group.setSize(15);
-        assertThat(course.getParticipantCount()).isEqualTo(15);
+        assertThat(course.participantCount()).isEqualTo(15);
     }
 
     @Test
@@ -98,6 +98,6 @@ class ScenarioViewModelTest {
     }
 
     private List<String> courseSubjects(ScenarioViewModel scenario) {
-        return scenario.courses().stream().map(CourseViewModel::getSubject).toList();
+        return scenario.courses().stream().map(CourseViewModel::subject).toList();
     }
 }
